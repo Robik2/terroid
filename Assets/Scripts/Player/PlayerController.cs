@@ -2,18 +2,24 @@ using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
-    [Header("Movement Stats")] 
+    [Header("Moving")] 
     [SerializeField] private float acceleration;
-    [SerializeField] private float stoppingForce; // 0 insta stop, 1 no stop
+    [SerializeField] private float groundStopMultiplier; // 0 insta stop, 1 no stop
+    [SerializeField] private float airStopMultiplier; // 0 insta stop, 1 no stop
     [SerializeField] private float maxSpeed;
     
+    [Header("Jumping")] 
     [SerializeField] private float jumpForce;
+    [SerializeField] private float doubleJumpForce;
     [SerializeField] private float coyoteTimeLength;
     [SerializeField] private float jumpLength;
-    private float jumpLengthCounter, coyoteTimeCounter;
-    private bool jumpPressed, beginJumping, isGrounded;
+    [SerializeField] private float jumpCutMult;
+    private float jumpLengthCounter, coyoteTimeCounter, currentJumpForce;
+    private bool jumpPressed, beginJumping, isGrounded, doubleJump;
     
+    [Header("Dashing")] 
     [SerializeField] private float dashSpeed;
+    [SerializeField] private float dashGravityMult;
     [SerializeField] private float dashTimeBetweenPresses;
     [SerializeField] private float dashCD;
     [SerializeField] private float dashDuration;
@@ -62,10 +68,8 @@ public class PlayerController : MonoBehaviour {
 
     private void HorizontalMovement() {
         //Moving and stoping
-        
         if(Input.GetAxisRaw("Horizontal") == 0) {
-            if(isGrounded) {  }
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x * stoppingForce, rb.linearVelocity.y);
+            rb.linearVelocity = isGrounded ? new Vector2(rb.linearVelocity.x * groundStopMultiplier, rb.linearVelocity.y) : new Vector2(rb.linearVelocity.x * airStopMultiplier, rb.linearVelocity.y);
         } else {
             rb.AddForce(new Vector2(acceleration * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y));
         }
@@ -81,22 +85,27 @@ public class PlayerController : MonoBehaviour {
     private void JumpInput() {
         jumpPressed = Input.GetKey(KeyCode.Space);
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded) {
+            currentJumpForce = jumpForce;
             beginJumping = true;
+        } else if (Input.GetKeyDown(KeyCode.Space) && doubleJump) {
+            currentJumpForce = doubleJumpForce;
+            beginJumping = true;
+            doubleJump = false;
         }
     }
 
-    private void Jump() { // ADD COYOTE TIME AND JUMP CUT
+    private void Jump() {
         if (jumpLength < jumpLengthCounter) {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * .5f);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMult);
             beginJumping = false;
             jumpLengthCounter = 0;
             return;
         }
         
         if (jumpPressed) {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, currentJumpForce);
         } else {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * .5f);
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMult);
             beginJumping = false;
             jumpLengthCounter = 0;
         }
@@ -131,7 +140,7 @@ public class PlayerController : MonoBehaviour {
         isDashing = true;
         StartCoroutine(nameof(EnableDash));
 
-        rb.linearVelocity = new Vector2(dashSpeed * dir, rb.linearVelocity.y * .8f);
+        rb.linearVelocity = new Vector2(dashSpeed * dir, rb.linearVelocity.y * dashGravityMult);
     }
 
     private IEnumerator EnableDash() {
@@ -154,6 +163,7 @@ public class PlayerController : MonoBehaviour {
     private void CheckGround() {
         if (Physics2D.OverlapBox(new Vector2(groundCheck.position.x, groundCheck.position.y), new Vector2(.98f, .2f), 0, whatIsGround)) {
             coyoteTimeCounter = coyoteTimeLength;
+            doubleJump = true;
         } else {
             coyoteTimeCounter -= Time.fixedDeltaTime;
         }
