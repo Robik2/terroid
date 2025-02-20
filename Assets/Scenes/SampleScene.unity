@@ -742,13 +742,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 421e48509376f4f4e950ebcf24f9d5cf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  acceleration: 45
-  stoppingForce: 0.85
+  acceleration: 55
+  groundStopMultiplier: 0.75
+  airStopMultiplier: 0.95
   maxSpeed: 10
   jumpForce: 20
+  doubleJumpForce: 15
   coyoteTimeLength: 0.08
   jumpLength: 0.16
+  jumpCutMult: 0.5
   dashSpeed: 45
+  dashGravityMult: 0.3
   dashTimeBetweenPresses: 0.2
   dashCD: 1
   dashDuration: 0.1
