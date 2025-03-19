@@ -2,6 +2,15 @@ using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
+    public static PlayerController instance;
+    private void Awake() {
+        if (instance == null) {
+            instance = this;
+        } else {
+            Destroy(gameObject);
+        }
+    }
+
     [Header("Moving")] 
     [SerializeField] private float acceleration;
     [SerializeField] private float groundStopMultiplier; // 0 insta stop, 1 no stop
@@ -14,7 +23,8 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float coyoteTimeLength;
     [SerializeField] private float jumpLength;
     [SerializeField] private float jumpCutMult;
-    private float jumpLengthCounter, coyoteTimeCounter, currentJumpForce;
+    [SerializeField] private float jumpBufferTime;
+    private float jumpLengthCounter, coyoteTimeCounter, currentJumpForce, jumpPressedTime;
     private bool jumpPressed, beginJumping, isGrounded, doubleJump;
     
     [Header("Dashing")] 
@@ -71,7 +81,7 @@ public class PlayerController : MonoBehaviour {
         if(Input.GetAxisRaw("Horizontal") == 0) {
             rb.linearVelocity = isGrounded ? new Vector2(rb.linearVelocity.x * groundStopMultiplier, rb.linearVelocity.y) : new Vector2(rb.linearVelocity.x * airStopMultiplier, rb.linearVelocity.y);
         } else {
-            rb.AddForce(new Vector2(acceleration * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y));
+            rb.AddForce(IsChangingDirection(Input.GetAxisRaw("Horizontal")) ? new Vector2(acceleration * 3f * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y) : new Vector2(acceleration * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y));
         }
         
         //speed cap
@@ -82,9 +92,16 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    private bool IsChangingDirection(float dir) {
+        if (rb.linearVelocity.x == 0) { return false;}
+        return (dir < 0 && rb.linearVelocity.x > 0.1f) || (dir > 0 && rb.linearVelocity.x < -0.1f);
+    }
+    
     private void JumpInput() {
         jumpPressed = Input.GetKey(KeyCode.Space);
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) {
+        if (Input.GetKeyDown(KeyCode.Space)) { jumpPressedTime = Time.time;}
+        
+        if (Time.time - jumpPressedTime < jumpBufferTime && isGrounded) {
             currentJumpForce = jumpForce;
             beginJumping = true;
         } else if (Input.GetKeyDown(KeyCode.Space) && doubleJump) {
