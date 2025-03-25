@@ -1,10 +1,10 @@
 using UnityEngine;
 
 public class Item : MonoBehaviour {
-    public string itemName;
-    public string itemDescription;
+    // public string itemName;                  ZE SKRYPTU UI ITEM
+    // public string itemDescription;                   ZE SKRYPTU UI ITEM
     public int amount;
-    public Sprite sprite;
+    [SerializeField] private GameObject uiItemPrefab;
 
     private float spawnTime;
 
@@ -14,7 +14,7 @@ public class Item : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D other) {
         if (other.CompareTag("Player")) {
-            int leftOverItems = InventoryManager.instance.AddItem(itemName, itemDescription, amount, sprite);
+            int leftOverItems = InventoryManager.instance.AddItem(uiItemPrefab, amount);
             if (leftOverItems <= 0) {
                 Destroy(gameObject);
             } else {
