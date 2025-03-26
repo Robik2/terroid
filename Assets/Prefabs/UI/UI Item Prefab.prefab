@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 3802878099350619400}
   - component: {fileID: 4014453719382121417}
   m_Layer: 5
-  m_Name: Heal Potion UI
-  m_TagString: Untagged
+  m_Name: UI Item Prefab
+  m_TagString: UIItem
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -37,7 +37,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -643, y: 366}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &193616293703085192
 CanvasRenderer:
@@ -67,7 +67,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -7930571331049095873, guid: fd374f73b8f16f94790df119cd575783, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -89,12 +89,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 954c689175b7c8041b3a1b1fb829cf1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: Heal Potion
-  item: {fileID: 1549147947862963284, guid: 4828046a7e3381943873f3f37f933706, type: 3}
+  itemSO: {fileID: 0}
   amountText: {fileID: 3269837453594482717}
   amount: 0
   isFull: 0
-  stackLimit: 99
   slot: {fileID: 0}
 --- !u!1 &7483982744987746552
 GameObject:
@@ -161,7 +159,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 00
+  m_text: 99
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

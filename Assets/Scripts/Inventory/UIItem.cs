@@ -2,16 +2,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIItem : MonoBehaviour{
-    public string itemName;
-    [SerializeField] private GameObject item;
-    [SerializeField] private TMP_Text amountText;
+public class UIItem : MonoBehaviour {
+    [SerializeField] public ItemSO itemSO;
+    public TMP_Text amountText;
     [HideInInspector] public int amount;
     [HideInInspector] public bool isFull;
-    [SerializeField] private int stackLimit;
     public ItemSlot slot;
+    public bool isDividedByRMB;
     private bool isHeld;
-    [SerializeField] private ItemUsage usage;
 
     private void Update() {
         if (isHeld == true) {
@@ -21,12 +19,12 @@ public class UIItem : MonoBehaviour{
     
     public int AddItem(int amountNew) {
         amount += amountNew;
-        if (amount >= stackLimit) {
-            amountText.text = stackLimit.ToString();
+        if (amount >= itemSO.stackLimit) {
+            amountText.text = itemSO.stackLimit.ToString();
             isFull = true;
             
-            int extraItems = amount - stackLimit;
-            amount = stackLimit;
+            int extraItems = amount - itemSO.stackLimit;
+            amount = itemSO.stackLimit;
             return extraItems;
         }
         
@@ -40,6 +38,48 @@ public class UIItem : MonoBehaviour{
     }
 
     public void UseItem() {
-        usage.UseItem();
+        switch (itemSO.itemType) {
+            case ItemSO.Type.consumable: // LATER MAKE IT ACTUALLY AFFECT THOSE STATS
+                ConsumeItem();
+                break;
+            
+            case ItemSO.Type.weapon: // LATER MAKE IT SO THAT THE WEAPON FIRE/ATTACK
+                Debug.Log("This is a weapon: " + itemSO.itemName);
+                break;
+            
+            case ItemSO.Type.armor: // LATER DELETE AND REPLACE WITH EQUIPMENT SYSTEM NOW ITS DEBUGGING ONLY
+                Debug.Log("This is an armor: " + itemSO.itemName);
+                break;
+            
+            default:
+                Debug.Log("Something went wrong");
+                break;
+        }
+    }
+
+    private void ConsumeItem() {
+        Debug.Log(itemSO.statToChange + " changed by " + itemSO.value);
+
+        UpdateAmount(-1, false);
+    }
+
+    public void DropItems() {                 // CHANGE THIS SO IT WOULD DROP OUT OF CHARACTER BASED ON ITS FACING DIRECTION
+        Item item = Instantiate(itemSO.itemPrefab, PlayerController.instance.transform.position + Vector3.right, Quaternion.identity).GetComponent<Item>();
+        item.amount = amount;
+        Destroy(gameObject);
+    }
+
+    public void UpdateAmount(int i, bool resetHeldItem) {
+        amount += i;
+        
+        if (amount <= 0) {
+            if (resetHeldItem == true) {
+                if(slot != null) slot.containedItem = null;
+                UIInput.instance.ResetHeldItem();
+            }
+            Destroy(gameObject);
+        }
+                
+        amountText.text = amount.ToString();
     }
 }

@@ -2,10 +2,14 @@ using UnityEngine;
 
 [CreateAssetMenu]
 public class ItemSO : ScriptableObject {
+    public Item itemPrefab;
     public Type itemType;
+    public Sprite sprite;
     public string itemName;
     public StatToChange statToChange;
     public int value;
+    public bool isStackable;
+    public int stackLimit;
 
     public enum Type {
         consumable,
@@ -19,9 +23,4 @@ public class ItemSO : ScriptableObject {
         mana,
         magicPower
     };
-
-    public bool UseItem() {
-        Debug.Log($"{statToChange} changed by {value}");
-        return true; // IN CASE I WOULD LIKE TO LIMIT THIS SOMEHOW
-    }
 }

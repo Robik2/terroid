@@ -19,24 +19,72 @@ public class UIInput : MonoBehaviour {
     private bool isHoldingItem;
     private UIItem heldItem;
 
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            LeftMouseClick();
+    private bool RMB;
+    public float RMBTime;
+    private float RMBLastCall;
+    private float RMBCurrentRefreshTime;
+    private readonly Dictionary<string, float> RMBRefreshTime = new Dictionary<string, float> {
+        {"slow", .25f},
+        {"medium", .16f},
+        {"fast", .03f}
+    };
+    
+    private void Update() {
+        if (Input.GetMouseButtonDown(0)) { LeftMouseClick(); }
+
+        RMBInput();
+    }
+
+    private void RMBInput() {
+        if (Input.GetMouseButtonUp(1)) { RMB = false; }
+        if (Input.GetMouseButtonDown(1)) { 
+            RMB = true;
+            RMBTime = Time.time;
+            RMBLastCall = 1;
+        }
+
+        if (RMB == true) {
+            switch (Time.time - RMBTime) {
+                case < 1:
+                    RMBCurrentRefreshTime = RMBRefreshTime["slow"];
+                    break;
+                
+                case < 2.5f:
+                    RMBCurrentRefreshTime = RMBRefreshTime["medium"];
+                    break;
+                
+                default:
+                    RMBCurrentRefreshTime = RMBRefreshTime["fast"];
+                    break;
+            }
+            
+            if(Time.time - RMBLastCall >= RMBCurrentRefreshTime) RightMouseClick();
+        }
+    }
+
+
+    private void RightMouseClick() {
+        RMBLastCall = Time.time;
+        
+        List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
+
+        if (isHoldingItem == true && results.Count == 0) { DropItems(); } // DROPS ITEMS ON THE GROUND
+
+        foreach (var result in results) {
+            if (result.gameObject.CompareTag("UIItem")) {
+                UIItem item = result.gameObject.GetComponent<UIItem>();
+                
+                if (isHoldingItem == false) {
+                    TakeOneItem(item);
+                }else if (isHoldingItem == true && item.itemSO.itemName == heldItem.itemSO.itemName) {
+                    AddOneItem(item);
+                }
+            }
         }
     }
 
     private void LeftMouseClick() {
-        PointerEventData pointerEventData = new PointerEventData(eventSystem)
-        {
-            position = Input.mousePosition
-        };
-        
-        List<RaycastResult> results = new List<RaycastResult>();
-        raycaster.Raycast(pointerEventData, results);
-        //END OF GETTING INPUT
-        
+        List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
         
         if(isHoldingItem && results.Count == 0) {heldItem.UseItem();} // USE ITEM
         
@@ -73,6 +121,15 @@ public class UIInput : MonoBehaviour {
         }
     }
 
+    private List<RaycastResult> GetObject() {
+        PointerEventData pointerEventData = new PointerEventData(eventSystem) { position = Input.mousePosition };
+        
+        List<RaycastResult> results = new List<RaycastResult>();
+        raycaster.Raycast(pointerEventData, results);
+        
+        return results;
+    }
+
     private void ToggleHold(UIItem item) { // WHEN NOT SWITCHING
         item.ToggleHold();
         isHoldingItem = !isHoldingItem;
@@ -89,11 +146,19 @@ public class UIInput : MonoBehaviour {
     }
 
     private void PlaceItem(ItemSlot slot, UIItem item) {
+        ItemSlot oldSlot = null;
+        if (item.slot != null) {
+            oldSlot = item.slot;
+            if (item.slot.containedItem.isDividedByRMB == false) { item.slot.containedItem = null; }
+        }
+        
         ToggleHold(item, slot);
         
-        if(item.slot != null) {item.slot.containedItem = null;}
         slot.containedItem = item;
+
         item.slot = slot;
+        
+        if(oldSlot != null && oldSlot.containedItem != null) oldSlot.containedItem.isDividedByRMB = false;
     }
 
     private void SwapItem(ItemSlot slot, UIItem item, UIItem slotItem) {
@@ -104,7 +169,7 @@ public class UIInput : MonoBehaviour {
         slotItem.slot = null;
         
         item.ToggleHold();
-        slotItem.ToggleHold();
+        if(slotItem != null) slotItem.ToggleHold();
         heldItem = slotItem;
         
         item.transform.SetParent(slot.transform);
@@ -115,5 +180,32 @@ public class UIInput : MonoBehaviour {
         if (isHoldingItem == false) { return; }
         
         ToggleHold(heldItem);
+    }
+
+    public void ResetHeldItem() {
+        isHoldingItem = false;
+        heldItem = null;
+    }
+
+    private void DropItems() {
+        heldItem.DropItems();
+        ResetHeldItem();
+    }
+
+    private void TakeOneItem(UIItem item) {
+        UIItem newItem = InventoryManager.instance.CreateUiItem(item.itemSO, item.transform);
+        newItem.slot = item.slot;
+        ToggleHold(newItem);
+        
+        heldItem.UpdateAmount(1, false);
+        item.UpdateAmount(-1, false); // NAJPEWNIEJ TUTAJ JEST PROBLEM BO USUWA JAK JEST POJEDYNCZY ITEM A POTEM W STWAP ITEM CHCE GO DOSIEGNAC
+        item.isDividedByRMB = true;
+        print("1");
+    }
+
+    private void AddOneItem(UIItem item) {
+        heldItem.UpdateAmount(1, false);
+        item.UpdateAmount(-1, false);
+        print("2");
     }
 }

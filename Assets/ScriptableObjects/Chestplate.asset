@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fc79dbb6bc4c5a64d8f5a953c856c9db, type: 3}
-  m_Name: HealthPotion
+  m_Name: Chestplate
   m_EditorClassIdentifier: 
-  itemPrefab: {fileID: 4177018003346724856, guid: b096cb6d52e91964398282afae9d29fc, type: 3}
-  itemType: 0
-  sprite: {fileID: -7930571331049095873, guid: fd374f73b8f16f94790df119cd575783, type: 3}
-  itemName: Heal Potion
-  statToChange: 1
-  value: 25
-  isStackable: 0
-  stackLimit: 99
+  itemPrefab: {fileID: 6263954828335459482, guid: 4128b8750b2b73047b7ef69498fa5257, type: 3}
+  itemType: 2
+  sprite: {fileID: -3720559007566261006, guid: 2ff1ba73f83aeca4bacf9beaf5420126, type: 3}
+  itemName: Chestplate
+  statToChange: 0
+  value: 0
+  isStackable: 1
+  stackLimit: 1
