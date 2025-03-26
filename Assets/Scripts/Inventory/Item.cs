@@ -1,8 +1,6 @@
 using UnityEngine;
 
 public class Item : MonoBehaviour {
-    // public string itemName;                  ZE SKRYPTU UI ITEM
-    // public string itemDescription;                   ZE SKRYPTU UI ITEM
     public int amount;
     [SerializeField] private GameObject uiItemPrefab;
 

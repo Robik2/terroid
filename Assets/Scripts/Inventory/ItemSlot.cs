@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class ItemSlot : MonoBehaviour {
-    [HideInInspector] public UIItem containedItem;
+    public UIItem containedItem;
 
     public int AddItem(int amount) {
         return containedItem.AddItem(amount);

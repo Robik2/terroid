@@ -2,9 +2,16 @@ using UnityEngine;
 
 [CreateAssetMenu]
 public class ItemSO : ScriptableObject {
+    public Type itemType;
     public string itemName;
     public StatToChange statToChange;
     public int value;
+
+    public enum Type {
+        consumable,
+        weapon,
+        armor
+    }
     
     public enum StatToChange {
         none,

@@ -11,13 +11,12 @@ public class UIItem : MonoBehaviour{
     [SerializeField] private int stackLimit;
     public ItemSlot slot;
     private bool isHeld;
+    [SerializeField] private ItemUsage usage;
 
     private void Update() {
         if (isHeld == true) {
             transform.position = Input.mousePosition;
         }
-        
-        
     }
     
     public int AddItem(int amountNew) {
@@ -38,5 +37,9 @@ public class UIItem : MonoBehaviour{
     public void ToggleHold() {
         isHeld = !isHeld;
         GetComponent<Image>().raycastTarget = !isHeld;
+    }
+
+    public void UseItem() {
+        usage.UseItem();
     }
 }

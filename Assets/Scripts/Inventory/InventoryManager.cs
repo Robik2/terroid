@@ -21,7 +21,7 @@ public class InventoryManager : MonoBehaviour {
         if (Input.GetButtonDown("Cancel")) {
             inventoryMenu.SetActive(!menuActive);
             menuActive = !menuActive;
-            if(menuActive == false) DeselectAllInventorySlots();
+            if(menuActive == false) UIInput.instance.PutItemBackToSlot();
         }
     }
 
@@ -46,25 +46,6 @@ public class InventoryManager : MonoBehaviour {
             leftOverItems = AddItem(uiItemPrefab, leftOverItems);
         }
         return leftOverItems;
-        
-        // foreach (ItemSlot slot in itemSlot) {
-        //     if (slot.containedItem != null && slot.containedItem.itemName == uiItemPrefab.GetComponent<UIItem>().itemName && slot.containedItem.isFull == false) {
-        //         
-        //     }
-        // }
-        //
-        // foreach(ItemSlot slot in itemSlot)
-        // {
-        //     if (slot.containedItem == null) {
-        //         int leftOverItems = slot.AddItem(uiItemPrefab, amount);
-        //         if (leftOverItems > 0) {
-        //             leftOverItems = AddItem(uiItemPrefab, leftOverItems);
-        //         }
-        //         return leftOverItems;
-        //     } else if (slot.containedItem.isFull == false && slot.containedItem.itemName == uiItemPrefab.GetComponent<UIItem>().itemName) {
-        //         
-        //     }
-        // }
     }
 
     private (ItemSlot slot, bool stackFound) SearchForSlot(GameObject uiItemPrefab) {
@@ -80,11 +61,5 @@ public class InventoryManager : MonoBehaviour {
         }
 
         return (foundSlot, false);
-    }
-
-    public void DeselectAllInventorySlots() {
-        for (int i = 10; i < itemSlot.Length; i++) {
-            // DISABLE ALL ITEM HOVERS
-        }
     }
 }

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc79dbb6bc4c5a64d8f5a953c856c9db, type: 3}
   m_Name: HealthPotion
   m_EditorClassIdentifier: 
-  itemName: Health Potion
+  itemName: Heal Potion
   statToChange: 1
   value: 25

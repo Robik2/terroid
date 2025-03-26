@@ -3,8 +3,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class UIInput : MonoBehaviour
-{
+public class UIInput : MonoBehaviour {
+    public static UIInput instance;
+    private void Awake() {
+        if (instance == null) {
+            instance = this;
+        } else {
+            Destroy(gameObject);
+        }
+    }
+
     public GraphicRaycaster raycaster;
     public EventSystem eventSystem;
 
@@ -27,8 +35,10 @@ public class UIInput : MonoBehaviour
         
         List<RaycastResult> results = new List<RaycastResult>();
         raycaster.Raycast(pointerEventData, results);
+        //END OF GETTING INPUT
         
-        if(isHoldingItem && results.Count == 0) {print("USE ITEM HERE");}
+        
+        if(isHoldingItem && results.Count == 0) {heldItem.UseItem();} // USE ITEM
         
         foreach (var result in results)
         {
@@ -36,7 +46,13 @@ public class UIInput : MonoBehaviour
                 ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
                 UIItem item = slot.containedItem;
 
-                if (heldItem != null && slot == heldItem.slot) { ToggleHold(heldItem); // RETURN TO ITS SLOT
+                if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
+                    ToggleHold(heldItem); 
+                    return;
+                }
+                
+                if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
+                    print("YOU WANTED TO SELECT SLOT IN HOTBAR BUT ITS NOT CODED IN");
                     return;
                 }
                 
@@ -48,9 +64,11 @@ public class UIInput : MonoBehaviour
                     case (null, true): // PLACE ITEM ON EMPTY SLOT
                         PlaceItem(slot, heldItem);
                         break;
+                    
+                    case (not null, true): // SWAPPING ITEMS
+                        SwapItem(slot, heldItem, item);
+                        break;
                 }
-
-                return;
             }
         }
     }
@@ -61,7 +79,6 @@ public class UIInput : MonoBehaviour
         heldItem = isHoldingItem ? item : null;
         
         item.transform.SetParent(isHoldingItem ? item.transform.root : item.slot.transform);
-        print("first TOGGLE");
     }
     
     private void ToggleHold(UIItem item, ItemSlot newSlot) { // WHEN SWITCHING TO OTHER EMPTY SLOT
@@ -69,14 +86,34 @@ public class UIInput : MonoBehaviour
         isHoldingItem = !isHoldingItem;
         
         item.transform.SetParent(isHoldingItem ? item.transform.root : newSlot.transform);
-        print("second TOGGLE");
     }
 
     private void PlaceItem(ItemSlot slot, UIItem item) {
         ToggleHold(item, slot);
         
-        item.slot.containedItem = null;
+        if(item.slot != null) {item.slot.containedItem = null;}
         slot.containedItem = item;
         item.slot = slot;
+    }
+
+    private void SwapItem(ItemSlot slot, UIItem item, UIItem slotItem) {
+        if (item.slot != null) { item.slot.containedItem = null; }
+        slot.containedItem = item;
+
+        item.slot = slot;
+        slotItem.slot = null;
+        
+        item.ToggleHold();
+        slotItem.ToggleHold();
+        heldItem = slotItem;
+        
+        item.transform.SetParent(slot.transform);
+        slotItem.transform.SetParent(slotItem.transform.root);
+    }
+
+    public void PutItemBackToSlot() { // CALLED WHEN CLOSING INV WHILE HOLDING ITEM
+        if (isHoldingItem == false) { return; }
+        
+        ToggleHold(heldItem);
     }
 }
