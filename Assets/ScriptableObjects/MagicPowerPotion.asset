@@ -16,7 +16,10 @@ MonoBehaviour:
   itemType: 0
   sprite: {fileID: 21300000, guid: 8eb19088163f12941bfecdc67a500740, type: 3}
   itemName: Magic Power Potion
-  statToChange: 3
-  value: 5
   isStackable: 0
   stackLimit: 99
+  statsToModify:
+  - stat: 3
+    value: 5
+  - stat: 2
+    value: 5

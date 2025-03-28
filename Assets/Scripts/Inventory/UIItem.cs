@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,8 +6,8 @@ using UnityEngine.UI;
 public class UIItem : MonoBehaviour {
     [SerializeField] public ItemSO itemSO;
     public TMP_Text amountText;
-    [HideInInspector] public int amount;
-    [HideInInspector] public bool isFull;
+    [ReadOnly] public int amount;
+    [ReadOnly] public bool isFull;
     public ItemSlot slot;
     public bool isDividedByRMB;
     private bool isHeld;
@@ -58,9 +59,11 @@ public class UIItem : MonoBehaviour {
     }
 
     private void ConsumeItem() {
-        Debug.Log(itemSO.statToChange + " changed by " + itemSO.value);
+        foreach (ItemSO.ModifyStat modifyStat in itemSO.statsToModify) {
+            Debug.Log(modifyStat.stat + " changed by " + modifyStat.value);  
+        }
 
-        UpdateAmount(-1, false);
+        UpdateAmount(-1, true);
     }
 
     public void DropItems() {                 // CHANGE THIS SO IT WOULD DROP OUT OF CHARACTER BASED ON ITS FACING DIRECTION
@@ -69,8 +72,12 @@ public class UIItem : MonoBehaviour {
         Destroy(gameObject);
     }
 
-    public void UpdateAmount(int i, bool resetHeldItem) {
+    public int UpdateAmount(int i, bool resetHeldItem) {
+        int amountBefore = amount;
         amount += i;
+        if (amount > itemSO.stackLimit) {
+            amount = itemSO.stackLimit;
+        }
         
         if (amount <= 0) {
             if (resetHeldItem == true) {
@@ -79,7 +86,10 @@ public class UIItem : MonoBehaviour {
             }
             Destroy(gameObject);
         }
-                
+
+        isFull = amount >= itemSO.stackLimit;
         amountText.text = amount.ToString();
+
+        return amount - amountBefore;
     }
 }

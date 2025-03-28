@@ -16,7 +16,6 @@ MonoBehaviour:
   itemType: 1
   sprite: {fileID: 4509572731663235917, guid: 5b07a3a658beaa44d98a8c30585d5651, type: 3}
   itemName: Sword
-  statToChange: 0
-  value: 0
   isStackable: 1
   stackLimit: 1
+  statsToModify: []

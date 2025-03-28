@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,14 +14,22 @@ public class InventoryManager : MonoBehaviour {
 
     [SerializeField] private GameObject inventoryMenu;
     [HideInInspector] public bool menuActive;
-    public ItemSlot[] itemSlot;
+    [HideInInspector] public bool isHoveringOverSlot;
+    public ItemSlot[] hotbarSlots;
+    public ItemSlot[] inventorySlots;
     public GameObject ItemUIPrefab;
-    
+    [ReadOnly] public ItemSlot selectedSlot;
+
+    private void Start() {
+        SelectSlot(hotbarSlots[0]);
+    }
+
     private void Update()
     {
         if (Input.GetButtonDown("Cancel")) {
             inventoryMenu.SetActive(!menuActive);
             menuActive = !menuActive;
+            UIInput.instance.RMB = false;
             if(menuActive == false) UIInput.instance.PutItemBackToSlot();
         }
     }
@@ -39,7 +48,7 @@ public class InventoryManager : MonoBehaviour {
 
     private (ItemSlot slot, bool stackFound) SearchForSlot(ItemSO itemSO) {
         ItemSlot foundSlot = null;
-        foreach (ItemSlot slot in itemSlot) {
+        foreach (ItemSlot slot in hotbarSlots) {
             if (slot.containedItem != null && slot.containedItem.itemSO.itemName == itemSO.itemName && slot.containedItem.isFull == false) {
                 return (slot, true);
             }
@@ -49,6 +58,16 @@ public class InventoryManager : MonoBehaviour {
             }
         }
 
+        foreach (ItemSlot slot in inventorySlots) {
+            if (slot.containedItem != null && slot.containedItem.itemSO.itemName == itemSO.itemName && slot.containedItem.isFull == false) {
+                return (slot, true);
+            }
+            
+            if (slot.containedItem == null && foundSlot == null) {
+                foundSlot = slot;
+            }
+        }
+        
         return (foundSlot, false);
     }
 
@@ -60,5 +79,12 @@ public class InventoryManager : MonoBehaviour {
         item.itemSO = itemSO;
 
         return item;
+    }
+
+    public void SelectSlot(ItemSlot slot) {
+        foreach (ItemSlot hotbarSlot in hotbarSlots) { hotbarSlot.DeselectSlot(); }
+        
+        selectedSlot = slot;
+        selectedSlot.SelectSlot();
     }
 }

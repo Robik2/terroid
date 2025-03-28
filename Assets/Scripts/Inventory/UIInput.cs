@@ -16,17 +16,18 @@ public class UIInput : MonoBehaviour {
     public GraphicRaycaster raycaster;
     public EventSystem eventSystem;
 
-    private bool isHoldingItem;
+    private bool isHoldingItem, isHeldItemDivided;
     private UIItem heldItem;
+    private ItemSlot oldSlot;
 
-    private bool RMB;
-    public float RMBTime;
+    [HideInInspector] public bool RMB;
+    private float RMBTime;
     private float RMBLastCall;
     private float RMBCurrentRefreshTime;
-    private readonly Dictionary<string, float> RMBRefreshTime = new Dictionary<string, float> {
-        {"slow", .25f},
-        {"medium", .16f},
-        {"fast", .03f}
+    private readonly Dictionary<string, float> RMBRefreshTime = new() {
+        {"slow", .2f},
+        {"medium", .08f},
+        {"fast", .015f}
     };
     
     private void Update() {
@@ -45,11 +46,11 @@ public class UIInput : MonoBehaviour {
 
         if (RMB == true) {
             switch (Time.time - RMBTime) {
-                case < 1:
+                case < .8f:
                     RMBCurrentRefreshTime = RMBRefreshTime["slow"];
                     break;
                 
-                case < 2.5f:
+                case < 1.5f:
                     RMBCurrentRefreshTime = RMBRefreshTime["medium"];
                     break;
                 
@@ -65,6 +66,8 @@ public class UIInput : MonoBehaviour {
 
     private void RightMouseClick() {
         RMBLastCall = Time.time;
+
+        if (InventoryManager.instance.menuActive == false) return;
         
         List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
 
@@ -100,7 +103,7 @@ public class UIInput : MonoBehaviour {
                 }
                 
                 if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
-                    print("YOU WANTED TO SELECT SLOT IN HOTBAR BUT ITS NOT CODED IN");
+                    InventoryManager.instance.SelectSlot(slot);
                     return;
                 }
                 
@@ -113,8 +116,9 @@ public class UIInput : MonoBehaviour {
                         PlaceItem(slot, heldItem);
                         break;
                     
-                    case (not null, true): // SWAPPING ITEMS
-                        SwapItem(slot, heldItem, item);
+                    case (not null, true):
+                        if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false) AddItemToStack(item, heldItem);
+                        else SwapItem(slot, heldItem, item);
                         break;
                 }
             }
@@ -132,7 +136,12 @@ public class UIInput : MonoBehaviour {
 
     private void ToggleHold(UIItem item) { // WHEN NOT SWITCHING
         item.ToggleHold();
+        if (item.slot != null) {
+            item.slot.containedItem = null;
+            item.slot = null;
+        }
         isHoldingItem = !isHoldingItem;
+        isHeldItemDivided = isHoldingItem != false && isHeldItemDivided;
         heldItem = isHoldingItem ? item : null;
         
         item.transform.SetParent(isHoldingItem ? item.transform.root : item.slot.transform);
@@ -141,14 +150,14 @@ public class UIInput : MonoBehaviour {
     private void ToggleHold(UIItem item, ItemSlot newSlot) { // WHEN SWITCHING TO OTHER EMPTY SLOT
         item.ToggleHold();
         isHoldingItem = !isHoldingItem;
+        heldItem = null;
         
         item.transform.SetParent(isHoldingItem ? item.transform.root : newSlot.transform);
     }
-
+    
+#region ManagingItemSlot
     private void PlaceItem(ItemSlot slot, UIItem item) {
-        ItemSlot oldSlot = null;
-        if (item.slot != null) {
-            oldSlot = item.slot;
+        if (item.slot != null && item.slot.containedItem != null) {
             if (item.slot.containedItem.isDividedByRMB == false) { item.slot.containedItem = null; }
         }
         
@@ -159,6 +168,8 @@ public class UIInput : MonoBehaviour {
         item.slot = slot;
         
         if(oldSlot != null && oldSlot.containedItem != null) oldSlot.containedItem.isDividedByRMB = false;
+        oldSlot = null;
+        InventoryManager.instance.isHoveringOverSlot = true;
     }
 
     private void SwapItem(ItemSlot slot, UIItem item, UIItem slotItem) {
@@ -176,12 +187,22 @@ public class UIInput : MonoBehaviour {
         slotItem.transform.SetParent(slotItem.transform.root);
     }
 
-    public void PutItemBackToSlot() { // CALLED WHEN CLOSING INV WHILE HOLDING ITEM
+    public void PutItemBackToSlot() { // CALLED WHEN CLOSING INV
         if (isHoldingItem == false) { return; }
         
-        ToggleHold(heldItem);
+        InventoryManager.instance.AddItem(heldItem.itemSO, heldItem.amount);
+        
+        Destroy(heldItem.gameObject);
+        ResetHeldItem();
+        oldSlot = null;
     }
 
+    private void AddItemToStack(UIItem stack, UIItem item) {
+        
+        item.UpdateAmount(-stack.UpdateAmount(item.amount, false), true);
+    }
+#endregion
+    
     public void ResetHeldItem() {
         isHoldingItem = false;
         heldItem = null;
@@ -192,20 +213,33 @@ public class UIInput : MonoBehaviour {
         ResetHeldItem();
     }
 
+#region TakingItemsFromStack
     private void TakeOneItem(UIItem item) {
+        oldSlot = item.slot;
+        isHeldItemDivided = true;
+        
         UIItem newItem = InventoryManager.instance.CreateUiItem(item.itemSO, item.transform);
-        newItem.slot = item.slot;
+        
+        if (item.amount == 1) {
+            item.slot.containedItem = null;
+        }
+        
         ToggleHold(newItem);
         
-        heldItem.UpdateAmount(1, false);
-        item.UpdateAmount(-1, false); // NAJPEWNIEJ TUTAJ JEST PROBLEM BO USUWA JAK JEST POJEDYNCZY ITEM A POTEM W STWAP ITEM CHCE GO DOSIEGNAC
         item.isDividedByRMB = true;
-        print("1");
+        heldItem.UpdateAmount(1, false);
+        item.UpdateAmount(-1, false);
     }
 
     private void AddOneItem(UIItem item) {
+        if (heldItem.amount == heldItem.itemSO.stackLimit) return;
+        
+        if (item.amount == 1) {
+            item.slot.containedItem = null;
+        }
+
         heldItem.UpdateAmount(1, false);
         item.UpdateAmount(-1, false);
-        print("2");
     }
+#endregion
 }

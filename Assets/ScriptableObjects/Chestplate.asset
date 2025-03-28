@@ -16,7 +16,6 @@ MonoBehaviour:
   itemType: 2
   sprite: {fileID: -3720559007566261006, guid: 2ff1ba73f83aeca4bacf9beaf5420126, type: 3}
   itemName: Chestplate
-  statToChange: 0
-  value: 0
   isStackable: 1
   stackLimit: 1
+  statsToModify: []
