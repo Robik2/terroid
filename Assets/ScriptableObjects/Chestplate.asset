@@ -9,13 +9,19 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fc79dbb6bc4c5a64d8f5a953c856c9db, type: 3}
+  m_Script: {fileID: 11500000, guid: bdc88601d87935442b4fd33d55bc1ff4, type: 3}
   m_Name: Chestplate
   m_EditorClassIdentifier: 
   itemPrefab: {fileID: 6263954828335459482, guid: 4128b8750b2b73047b7ef69498fa5257, type: 3}
-  itemType: 2
   sprite: {fileID: -3720559007566261006, guid: 2ff1ba73f83aeca4bacf9beaf5420126, type: 3}
   itemName: Chestplate
-  isStackable: 1
-  stackLimit: 1
-  statsToModify: []
+  isStackable: 0
+  stackLimit: 99
+  armorType: 1
+  statsToModify:
+  - stat: 1
+    value: 5
+  - stat: 0
+    value: 20
+  - stat: 2
+    value: 5

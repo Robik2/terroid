@@ -55,7 +55,7 @@ PrefabInstance:
     - target: {fileID: 7053517980842873979, guid: 7a76de58740ccf64085695151bc21a53, type: 3}
       propertyPath: itemSO
       value: 
-      objectReference: {fileID: 11400000, guid: 8d02731b5d9caba49ac388a03050149c, type: 2}
+      objectReference: {fileID: 11400000, guid: 36da72f99db2e4141a629b71d397cdb8, type: 2}
     - target: {fileID: 7723050395299801221, guid: 7a76de58740ccf64085695151bc21a53, type: 3}
       propertyPath: m_Name
       value: Heal Potion Variant

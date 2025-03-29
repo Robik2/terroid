@@ -1,8 +1,10 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class Item : MonoBehaviour {
-    public int amount;
+    [ShowIf("@IsStackable")]
+    public int amount = 1;
     [SerializeField] private ItemSO itemSO;
     [SerializeField] private Collider2D collectCol;
 
@@ -10,11 +12,12 @@ public class Item : MonoBehaviour {
 
     private void Start() {
         spawnTime = Time.time;
+        amount = itemSO.isStackable ? amount : 1;
         StartCoroutine(AllowCollecting());
     }
 
     private IEnumerator AllowCollecting() {
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(0.5f);
         collectCol.excludeLayers = 0;
     }
 
@@ -27,6 +30,8 @@ public class Item : MonoBehaviour {
                 amount = leftOverItems;
             }
         } else if (other.CompareTag("Item")) {
+            if (itemSO.isStackable == false) { return; }
+            
             Item item = other.GetComponent<Item>();
             
             if (gameObject.GetComponent<Item>().spawnTime < item.spawnTime && item.itemSO.itemName == itemSO.itemName) {
@@ -35,4 +40,6 @@ public class Item : MonoBehaviour {
             }
         }
     }
+
+    private bool IsStackable => itemSO.isStackable;
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -17,6 +18,7 @@ public class UIInput : MonoBehaviour {
     public EventSystem eventSystem;
 
     private bool isHoldingItem, isHeldItemDivided;
+
     private UIItem heldItem;
     private ItemSlot oldSlot;
 
@@ -116,8 +118,8 @@ public class UIInput : MonoBehaviour {
                         PlaceItem(slot, heldItem);
                         break;
                     
-                    case (not null, true):
-                        if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false) AddItemToStack(item, heldItem);
+                    case (not null, true): // ADDING TO STACK OR SWAPING ITEM IF CANT
+                        if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false && item.itemSO.isStackable == true) AddItemToStack(item, heldItem);
                         else SwapItem(slot, heldItem, item);
                         break;
                 }
@@ -232,6 +234,7 @@ public class UIInput : MonoBehaviour {
     }
 
     private void AddOneItem(UIItem item) {
+        if (item.itemSO.isStackable == false) return;
         if (heldItem.amount == heldItem.itemSO.stackLimit) return;
         
         if (item.amount == 1) {
@@ -240,6 +243,27 @@ public class UIInput : MonoBehaviour {
 
         heldItem.UpdateAmount(1, false);
         item.UpdateAmount(-1, false);
+    }
+#endregion
+
+#region HoverCheckForDisplayingDescription
+    public IEnumerator HoveringOverSlotCheck() { // THIS IS USED TO DISPLAY DESCRIPTION WHEN YOU COLLECT ITEM AND IT LANDS ON THE SLOT THAT YOU ARE HOVERING OVER
+        yield return new WaitForSeconds(.01f);
+        
+        DelayedHoverCheck();
+    }
+
+    private void DelayedHoverCheck() {
+        List<RaycastResult> results = GetObject();
+
+        if (results.Count == 0) return;
+
+        foreach (var result in results) {
+            if (result.gameObject.CompareTag("UIItem")) {
+                ItemDescription.instance.UpdateDescription(result.gameObject.GetComponent<UIItem>().itemSO);
+                InventoryManager.instance.isHoveringOverSlot = true;
+            }
+        }
     }
 #endregion
 }

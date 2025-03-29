@@ -28,7 +28,7 @@ public class ItemSlot : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler
         UIInput.instance.RMB = false; // THIS RESETS RMB REFRESH RATE IF LEFT THE SLOT
         InventoryManager.instance.isHoveringOverSlot = false;
     }
-
+    
     public void OnPointerEnter(PointerEventData eventData) {
         InventoryManager.instance.isHoveringOverSlot = containedItem != null;
         

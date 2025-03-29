@@ -39,30 +39,27 @@ public class UIItem : MonoBehaviour {
     }
 
     public void UseItem() {
-        switch (itemSO.itemType) {
-            case ItemSO.Type.consumable: // LATER MAKE IT ACTUALLY AFFECT THOSE STATS
+        switch (itemSO) {
+            case ItemConsumable item: // LATER MAKE IT ACTUALLY AFFECT THOSE STATS
                 ConsumeItem();
                 break;
             
-            case ItemSO.Type.weapon: // LATER MAKE IT SO THAT THE WEAPON FIRE/ATTACK
-                Debug.Log("This is a weapon: " + itemSO.itemName);
-                break;
-            
-            case ItemSO.Type.armor: // LATER DELETE AND REPLACE WITH EQUIPMENT SYSTEM NOW ITS DEBUGGING ONLY
-                Debug.Log("This is an armor: " + itemSO.itemName);
-                break;
-            
-            default:
-                Debug.Log("Something went wrong");
-                break;
+            // case ItemSO.Type.weapon: // LATER MAKE IT SO THAT THE WEAPON FIRE/ATTACK
+            //     Debug.Log("This is a weapon: " + itemSO.itemName);
+            //     break;
+            //
+            // case ItemSO.Type.armor: // LATER DELETE AND REPLACE WITH EQUIPMENT SYSTEM NOW ITS DEBUGGING ONLY
+            //     Debug.Log("This is an armor: " + itemSO.itemName);
+            //     break;
         }
     }
 
     private void ConsumeItem() {
-        foreach (ItemSO.ModifyStat modifyStat in itemSO.statsToModify) {
-            Debug.Log(modifyStat.stat + " changed by " + modifyStat.value);  
+        ItemConsumable item = itemSO as ItemConsumable;
+        foreach (ItemConsumable.ModifyStat modifyStat in item.statsToModify) {
+            Debug.Log(modifyStat.stat + " changed by " + modifyStat.value); 
         }
-
+        
         UpdateAmount(-1, true);
     }
 

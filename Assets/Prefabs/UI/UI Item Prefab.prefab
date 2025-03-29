@@ -94,6 +94,7 @@ MonoBehaviour:
   amount: 0
   isFull: 0
   slot: {fileID: 0}
+  isDividedByRMB: 0
 --- !u!1 &7483982744987746552
 GameObject:
   m_ObjectHideFlags: 0

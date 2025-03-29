@@ -43,13 +43,18 @@ public class InventoryManager : MonoBehaviour {
         if (leftOverItems > 0) {
             leftOverItems = AddItem(itemSO, leftOverItems);
         }
+        
         return leftOverItems;
     }
 
     private (ItemSlot slot, bool stackFound) SearchForSlot(ItemSO itemSO) {
         ItemSlot foundSlot = null;
         foreach (ItemSlot slot in hotbarSlots) {
-            if (slot.containedItem != null && slot.containedItem.itemSO.itemName == itemSO.itemName && slot.containedItem.isFull == false) {
+            if (slot.containedItem != null 
+                && slot.containedItem.itemSO.itemName == itemSO.itemName 
+                && slot.containedItem.isFull == false 
+                && slot.containedItem.itemSO.isStackable == true) {
+                
                 return (slot, true);
             }
             
@@ -59,7 +64,11 @@ public class InventoryManager : MonoBehaviour {
         }
 
         foreach (ItemSlot slot in inventorySlots) {
-            if (slot.containedItem != null && slot.containedItem.itemSO.itemName == itemSO.itemName && slot.containedItem.isFull == false) {
+            if (slot.containedItem != null 
+                && slot.containedItem.itemSO.itemName == itemSO.itemName 
+                && slot.containedItem.isFull == false 
+                && slot.containedItem.itemSO.isStackable == true) {
+                
                 return (slot, true);
             }
             
@@ -74,10 +83,12 @@ public class InventoryManager : MonoBehaviour {
     public UIItem CreateUiItem(ItemSO itemSO, Transform parent) {
         UIItem item = Instantiate(ItemUIPrefab, parent).GetComponent<UIItem>();
         item.GetComponent<Image>().sprite = itemSO.sprite;
-        item.amountText.enabled = !itemSO.isStackable;
+        item.amountText.enabled = itemSO.isStackable;
         item.name = itemSO.itemName;
         item.itemSO = itemSO;
-
+        
+        StartCoroutine(UIInput.instance.HoveringOverSlotCheck());
+        
         return item;
     }
 
@@ -86,5 +97,9 @@ public class InventoryManager : MonoBehaviour {
         
         selectedSlot = slot;
         selectedSlot.SelectSlot();
+    }
+
+    public bool CanDisplayDescription() {
+        return menuActive && isHoveringOverSlot;
     }
 }

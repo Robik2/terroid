@@ -55,7 +55,7 @@ PrefabInstance:
     - target: {fileID: 7053517980842873979, guid: 7a76de58740ccf64085695151bc21a53, type: 3}
       propertyPath: itemSO
       value: 
-      objectReference: {fileID: 11400000, guid: eea78dc5571462f4885b6d9ae0b593d4, type: 2}
+      objectReference: {fileID: 11400000, guid: 9c7f569869e173a45b4e1523058c114e, type: 2}
     - target: {fileID: 7723050395299801221, guid: 7a76de58740ccf64085695151bc21a53, type: 3}
       propertyPath: m_Name
       value: Magic Power Potion Variant
