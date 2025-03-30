@@ -15,6 +15,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 4177018003346724856, guid: b096cb6d52e91964398282afae9d29fc, type: 3}
   sprite: {fileID: -7930571331049095873, guid: fd374f73b8f16f94790df119cd575783, type: 3}
   itemName: Heal Potion
+  rarity: 1
   isStackable: 1
   stackLimit: 99
   statsToModify:

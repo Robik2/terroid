@@ -1,7 +1,7 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewWeapon", menuName = "Items/Item Weapon SO")]
+[CreateAssetMenu(fileName = "NewWeapon", menuName = "Scriptable Objects/Items/Item Weapon SO")]
 public class ItemWeapon : ItemSO {
     public DamageType damageType;
     public int damageValue;

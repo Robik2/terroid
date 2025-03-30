@@ -1,4 +1,5 @@
 using System.Collections;
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour {
@@ -11,13 +12,14 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    [Header("Moving")] 
+    [TitleGroup("Moving")] 
     [SerializeField] private float acceleration;
-    [SerializeField] private float groundStopMultiplier; // 0 insta stop, 1 no stop
-    [SerializeField] private float airStopMultiplier; // 0 insta stop, 1 no stop
+    [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")] private float groundStopMultiplier;
+    [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")] private float airStopMultiplier;
     [SerializeField] private float maxSpeed;
+    private float currentMaxSpeed;
     
-    [Header("Jumping")] 
+    [TitleGroup("Jumping")] 
     [SerializeField] private float jumpForce;
     [SerializeField] private float doubleJumpForce;
     [SerializeField] private float coyoteTimeLength;
@@ -27,7 +29,7 @@ public class PlayerController : MonoBehaviour {
     private float jumpLengthCounter, coyoteTimeCounter, currentJumpForce, jumpPressedTime;
     private bool jumpPressed, beginJumping, isGrounded, doubleJump;
     
-    [Header("Dashing")] 
+    [TitleGroup("Dashing")] 
     [SerializeField] private float dashSpeed;
     [SerializeField] private float dashGravityMult;
     [SerializeField] private float dashTimeBetweenPresses;
@@ -37,11 +39,11 @@ public class PlayerController : MonoBehaviour {
     private bool canDash, isDashing;
 
     
-    [Header("Transforms")]
+    [TitleGroup("Transforms")]
     [SerializeField] private Transform selectedItem;
     [SerializeField] private Transform groundCheck;
     
-    [Header("Other")]
+    [TitleGroup("Other")]
     [SerializeField] private SpriteRenderer rend;
     [SerializeField] private LayerMask whatIsGround;
         
@@ -55,6 +57,7 @@ public class PlayerController : MonoBehaviour {
         rb = GetComponent<Rigidbody2D>();
         cam = Camera.main;
         canDash = true;
+        currentMaxSpeed = maxSpeed;
     }
 
     private void Update() {
@@ -85,10 +88,10 @@ public class PlayerController : MonoBehaviour {
         }
         
         //speed cap
-        if (rb.linearVelocity.x > maxSpeed) {
-            rb.linearVelocity = new Vector2(maxSpeed, rb.linearVelocity.y);
-        } else if (rb.linearVelocity.x < -maxSpeed) {
-            rb.linearVelocity = new Vector2(-maxSpeed, rb.linearVelocity.y);
+        if (rb.linearVelocity.x > currentMaxSpeed) {
+            rb.linearVelocity = new Vector2(currentMaxSpeed, rb.linearVelocity.y);
+        } else if (rb.linearVelocity.x < -currentMaxSpeed) {
+            rb.linearVelocity = new Vector2(-currentMaxSpeed, rb.linearVelocity.y);
         }
     }
 
@@ -186,6 +189,10 @@ public class PlayerController : MonoBehaviour {
         }
         
         isGrounded = coyoteTimeCounter > 0;
+    }
+
+    public void ApplyMaxSpeedBonus(float bonus) {
+        currentMaxSpeed = maxSpeed + bonus;
     }
 
     private void OnDrawGizmos() {

@@ -15,6 +15,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 6263954828335459482, guid: 4128b8750b2b73047b7ef69498fa5257, type: 3}
   sprite: {fileID: -3720559007566261006, guid: 2ff1ba73f83aeca4bacf9beaf5420126, type: 3}
   itemName: Chestplate
+  rarity: 3
   isStackable: 0
   stackLimit: 99
   armorType: 1

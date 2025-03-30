@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewArmor", menuName = "Items/Item Armor SO")]
+[CreateAssetMenu(fileName = "NewArmor", menuName = "Scriptable Objects/Items/Item Armor SO")]
 public class ItemArmor : ItemSO {
     public ArmorType armorType;
     public List<ModifyStat> statsToModify = new();

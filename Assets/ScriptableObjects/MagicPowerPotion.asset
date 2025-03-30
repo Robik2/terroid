@@ -15,6 +15,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 8084792728338340668, guid: 765acebbc8746f242b2d55e47bad4aaf, type: 3}
   sprite: {fileID: 21300000, guid: 8eb19088163f12941bfecdc67a500740, type: 3}
   itemName: Magic Power Potion
+  rarity: 2
   isStackable: 1
   stackLimit: 99
   statsToModify:

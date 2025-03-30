@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using TMPro;
 using UnityEngine;
 
@@ -26,6 +28,7 @@ public class ItemDescription : MonoBehaviour {
 
     public void UpdateDescription(ItemSO itemSO) {
         itemName.text = itemSO.itemName;
+        itemName.color = InventoryManager.rarityColors[itemSO.rarity.ToString()];
 
         string descriptionText = "";
 

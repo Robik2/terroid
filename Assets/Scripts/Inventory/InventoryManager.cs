@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,14 @@ public class InventoryManager : MonoBehaviour {
     public ItemSlot[] inventorySlots;
     public GameObject ItemUIPrefab;
     [ReadOnly] public ItemSlot selectedSlot;
+    
+    public static readonly Dictionary<string, Color> rarityColors = new() {
+        {"common", new Color(0.76f, 0.76f, 0.76f)},
+        {"uncommon", new Color(0.15f, 0.84f, 0.27f)},
+        {"rare", new Color(0f, 0.64f, 0.82f)},
+        {"epic", new Color(0.5f, 0f, 0.73f)},
+        {"legendary", new Color(0.79f, 0.58f, 0f)}
+    };
 
     private void Start() {
         SelectSlot(hotbarSlots[0]);

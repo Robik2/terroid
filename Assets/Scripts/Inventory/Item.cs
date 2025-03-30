@@ -7,13 +7,20 @@ public class Item : MonoBehaviour {
     public int amount = 1;
     [SerializeField] private ItemSO itemSO;
     [SerializeField] private Collider2D collectCol;
+    [SerializeField] private ParticleSystem itemHighlight;
 
     private float spawnTime;
 
     private void Start() {
         spawnTime = Time.time;
         amount = itemSO.isStackable ? amount : 1;
+        SetHighlightColor(InventoryManager.rarityColors[itemSO.rarity.ToString()]);
         StartCoroutine(AllowCollecting());
+    }
+
+    private void SetHighlightColor(Color color) {
+        var main = itemHighlight.main;
+        main.startColor = color;
     }
 
     private IEnumerator AllowCollecting() {
@@ -41,5 +48,5 @@ public class Item : MonoBehaviour {
         }
     }
 
-    private bool IsStackable => itemSO.isStackable;
+    private bool IsStackable => itemSO == null || itemSO.isStackable;
 }

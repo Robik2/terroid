@@ -3,7 +3,7 @@ using Sirenix.OdinInspector;
 using Sirenix.Utilities;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewConsumable", menuName = "Items/Item Consumable SO")]
+[CreateAssetMenu(fileName = "NewConsumable", menuName = "Scriptable Objects/Items/Item Consumable SO")]
 public class ItemConsumable : ItemSO
 {
     public List<ModifyStat> statsToModify = new();
@@ -21,6 +21,7 @@ public class ItemConsumable : ItemSO
         public bool isBuff;
         
         [ShowIf("isBuff")]
+        [LabelText("Buff Duration (s)")]
         public float buffDuration;
     }
 }

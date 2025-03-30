@@ -15,6 +15,7 @@ MonoBehaviour:
   itemPrefab: {fileID: 1282464891802903999, guid: 6d292f6d78a6610419381cf29df87f4b, type: 3}
   sprite: {fileID: 4509572731663235917, guid: 5b07a3a658beaa44d98a8c30585d5651, type: 3}
   itemName: Sword
+  rarity: 4
   isStackable: 0
   stackLimit: 99
   damageType: 0
