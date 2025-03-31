@@ -14,16 +14,6 @@ namespace Inventory {
             legs
         }
 
-        public enum StatToChange {
-            health,
-            defense,
-            [InspectorName("Melee Damage (%)")] meleeDamage,
-            [InspectorName("Magic Damage (%)")] magicDamage,
-            [InspectorName("Range Damage (%)")] rangeDamage,
-            critChance,
-            [InspectorName("Attack Speed (%)")] attackSpeed
-        };
-
         [System.Serializable]
         public struct ModifyStat {
             public StatToChange stat;

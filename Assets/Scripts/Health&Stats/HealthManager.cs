@@ -3,17 +3,20 @@ using UnityEngine;
 
 namespace HealthAndStats {
     public class HealthManager : MonoBehaviour {
-        [SerializeField] private int maxHealth;
+        [SerializeField] private float maxHealth;
+        public float MaxHealth => maxHealth;
+
         [SerializeField] [LabelText("IFrames (s)")] private float iframes;
         private float lastTimeHit;
         
         [SerializeField] [ReadOnly] [LabelText("MaxHP+Bonus")]
         [BoxGroup("Debug Health Stats")] [HorizontalGroup("Debug Health Stats/Row")]
-        private int maxHealthAfterBonus;
+        private float maxHealthAfterBonus;
+        public float MaxHealthAfterBonus => maxHealthAfterBonus;
         
         [SerializeField] [ReadOnly] [LabelText("CurrentHP")]
         [BoxGroup("Debug Health Stats")] [HorizontalGroup("Debug Health Stats/Row")]
-        private int currentHealth;
+        private float currentHealth;
 
         private StatsManager stats;
 
@@ -23,18 +26,30 @@ namespace HealthAndStats {
         }
 
         public void InitialiseHealth() {
-            maxHealthAfterBonus = maxHealth + stats.MaxHealthBonus;
+            maxHealthAfterBonus = stats.MaxHealth;
             currentHealth = maxHealthAfterBonus;
         }
 
-        public void TryTakeDamage(int amount) {
+        public void UpdateHealth() {
+            maxHealthAfterBonus = stats.MaxHealth;
+        }
+        
+        public bool RestoreHealth(float amount) {
+            if (currentHealth >= maxHealthAfterBonus) return false;
+
+            currentHealth += amount;
+            currentHealth = currentHealth > maxHealthAfterBonus ? maxHealthAfterBonus : currentHealth;
+            return true;
+        }
+        
+        public void TryTakeDamage(float amount) {
             if (Time.time - lastTimeHit > iframes) {
                 lastTimeHit = Time.time;
                 TakeDamage(amount);
             }
         }
         
-        private void TakeDamage(int amount) {
+        private void TakeDamage(float amount) {
             amount = amount - stats.Defense < 1 ? 1 : amount - stats.Defense; // APPLIES DEFENSE BUT CANT GO LOWER THAN 1
             currentHealth -= amount;
             Debug.Log("Took " + amount + " damage\nHealth left: " + currentHealth);

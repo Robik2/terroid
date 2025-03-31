@@ -197,14 +197,23 @@ namespace Player {
     
     #region UsingHotbarItems
         private void MouseInput() {
+            
             if (Input.GetMouseButtonDown(0) && InventoryManager.instance.CanUseItem()) {
-                UseItem(UIInput.instance.IsHoldingItem == true ? UIInput.instance.HeldItem.itemSO : InventoryManager.instance.selectedSlot.containedItem.itemSO);
+                if (UIInput.instance.IsHoldingItem == true) {
+                    UseItem(UIInput.instance.HeldItem);
+                } else if(InventoryManager.instance.selectedSlot.containedItem != null) {
+                    UseItem(InventoryManager.instance.selectedSlot.containedItem);
+                }
             }
         }
         
-        private void UseItem(ItemSO item) {
+        private void UseItem(UIItem item) {
             if (item == null) return;
-            Debug.Log(item.itemName);
+
+            item.itemSO.UseItem();
+                
+            if(item.itemSO is ItemConsumable)
+                item.UpdateAmount(-1, true);
         }
 
     #endregion

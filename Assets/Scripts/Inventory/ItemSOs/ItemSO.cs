@@ -19,6 +19,18 @@ namespace Inventory {
             epic,
             legendary
         }
+        
+        public enum StatToChange {
+            [InspectorName("health")] maxHealth,
+            [InspectorName("mana")] maxMana,
+            defense,
+            critChanceBonus,
+            meleeDamageMult,
+            rangeDamageMult,
+            magicDamageMult,
+            attackSpeedMult,
+            moveSpeedBonus
+        };
 
         public virtual void UseItem() { }
     }

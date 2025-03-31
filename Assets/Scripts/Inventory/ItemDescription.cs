@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using HealthAndStats;
 using TMPro;
 using UnityEngine;
 
@@ -15,8 +16,6 @@ namespace Inventory {
         [SerializeField] private TMP_Text itemName;
         [SerializeField] private TMP_Text description;
         [SerializeField] private GameObject panel;
-
-        private readonly HashSet<ItemArmor.StatToChange> percentageStatChange = new() { ItemArmor.StatToChange.meleeDamage, ItemArmor.StatToChange.rangeDamage, ItemArmor.StatToChange.magicDamage }; // LATER MOVE THIS TO STATMANAGER SCRIPT
 
         private void Update() {
             panel.SetActive(InventoryManager.instance.CanDisplayDescription());
@@ -50,7 +49,7 @@ namespace Inventory {
                     foreach (ItemArmor.ModifyStat modifyStat in item.statsToModify) {
                         string statString = SplitStatName(modifyStat.stat.ToString());
 
-                        if (percentageStatChange.Contains(modifyStat.stat))
+                        if (StatsManager.percentageStatChange.Contains(modifyStat.stat))
                             descriptionText += $"+{modifyStat.value}% {statString}\n";
                         else
                             descriptionText += $"+{modifyStat.value} {statString}\n";
