@@ -91,6 +91,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemSO: {fileID: 0}
   amountText: {fileID: 3269837453594482717}
+  dropItemForce: 2
   amount: 0
   isFull: 0
   slot: {fileID: 0}

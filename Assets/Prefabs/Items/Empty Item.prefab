@@ -809,7 +809,7 @@ ParticleSystem:
           m_RotationOrder: 4
     arc:
       value: 360
-      mode: 2
+      mode: 0
       spread: 0
       speed:
         serializedVersion: 2
@@ -4938,10 +4938,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4266625614486711999}
+  - component: {fileID: 7053517980842873979}
   - component: {fileID: 609060098697469349}
   - component: {fileID: 5101663926830332927}
   - component: {fileID: 6649343801822109677}
-  - component: {fileID: 7053517980842873979}
   m_Layer: 7
   m_Name: Empty Item
   m_TagString: Item
@@ -4966,6 +4966,23 @@ Transform:
   - {fileID: 3902080373512681567}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7053517980842873979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7723050395299801221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 931cb375cca9f414e868de2a55a9b928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  amount: 1
+  dropForce: 7
+  itemSO: {fileID: 0}
+  collectCol: {fileID: 5101663926830332927}
+  itemHighlight: {fileID: 5727593296143055979}
 --- !u!61 &609060098697469349
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -5085,20 +5102,3 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
---- !u!114 &7053517980842873979
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7723050395299801221}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 931cb375cca9f414e868de2a55a9b928, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  amount: 1
-  itemSO: {fileID: 0}
-  collectCol: {fileID: 5101663926830332927}
-  itemHighlight: {fileID: 5727593296143055979}
-  itemHighlightCore: {fileID: 0}

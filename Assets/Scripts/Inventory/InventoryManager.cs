@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Player;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,6 +20,8 @@ namespace Inventory {
         public GameObject ItemUIPrefab;
         [ReadOnly] public ItemSlot selectedSlot;
 
+        private bool canUseItem = true;
+
         public static readonly Dictionary<string, Color> rarityColors = new() {
             { "common", new Color(0.76f, 0.76f, 0.76f) },
             { "uncommon", new Color(0.15f, 0.84f, 0.27f) },
@@ -33,10 +36,19 @@ namespace Inventory {
 
         private void Update() {
             if (Input.GetButtonDown("Cancel")) {
-                inventoryMenu.SetActive(!menuActive);
-                menuActive = !menuActive;
-                UIInput.instance.RMB = false;
-                if (menuActive == false) UIInput.instance.PutItemBackToSlot();
+                ToggleInventory();
+            }
+        }
+
+        private void ToggleInventory() {
+            inventoryMenu.SetActive(!menuActive);
+            menuActive = !menuActive;
+            UIInput.instance.RMB = false;
+            if (menuActive == false) {
+                foreach (ItemSlot slot in inventorySlots) {
+                    slot.CheckHover();
+                }
+                UIInput.instance.PutItemBackToSlot();
             }
         }
 
@@ -95,6 +107,14 @@ namespace Inventory {
 
         public bool CanDisplayDescription() {
             return menuActive && isHoveringOverSlot;
+        }
+
+        public void SetCanUseItem(bool value) { // THIS IS SET IN ITEM SLOT WHEN HOVERING OVER
+            canUseItem = value;
+        }
+        
+        public bool CanUseItem() {
+            return isHoveringOverSlot == false & canUseItem == true;
         }
     }
 }

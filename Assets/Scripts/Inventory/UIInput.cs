@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -14,12 +15,17 @@ namespace Inventory {
 
         public GraphicRaycaster raycaster;
         public EventSystem eventSystem;
+        
+        private UIItem heldItem;
+        public UIItem HeldItem => heldItem;
 
         private bool isHoldingItem, isHeldItemDivided;
+        public bool IsHoldingItem => isHoldingItem;
 
-        private UIItem heldItem;
+        
         private ItemSlot oldSlot;
 
+        // RIGHT MOUSE BUTTON VARIABLES
         [HideInInspector] public bool RMB;
         private float RMBTime;
         private float RMBLastCall;
@@ -87,7 +93,7 @@ namespace Inventory {
         private void LeftMouseClick() {
             List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
 
-            if (isHoldingItem && results.Count == 0) { heldItem.UseItem(); } // USE ITEM
+            // if (isHoldingItem && results.Count == 0) { return; }
 
             foreach (var result in results) {
                 if (result.gameObject.CompareTag("Slot")) {
@@ -153,7 +159,7 @@ namespace Inventory {
             item.transform.SetParent(isHoldingItem ? item.transform.root : newSlot.transform);
         }
 
-        #region ManagingItemSlot
+    #region ManagingItemSlot
 
         private void PlaceItem(ItemSlot slot, UIItem item) {
             if (item.slot != null && item.slot.containedItem != null) {
@@ -202,7 +208,7 @@ namespace Inventory {
             item.UpdateAmount(-stack.UpdateAmount(item.amount, false), true);
         }
 
-        #endregion
+    #endregion
 
         public void ResetHeldItem() {
             isHoldingItem = false;
@@ -243,7 +249,7 @@ namespace Inventory {
 
         #endregion
 
-        #region HoverCheckForDisplayingDescription
+    #region ChecksForOtherScripts
 
         public IEnumerator HoveringOverSlotCheck() { // THIS IS USED TO DISPLAY DESCRIPTION WHEN YOU COLLECT ITEM AND IT LANDS ON THE SLOT THAT YOU ARE HOVERING OVER
             yield return new WaitForSeconds(.01f);
@@ -260,10 +266,10 @@ namespace Inventory {
                 if (result.gameObject.CompareTag("UIItem")) {
                     ItemDescription.instance.UpdateDescription(result.gameObject.GetComponent<UIItem>().itemSO);
                     InventoryManager.instance.isHoveringOverSlot = true;
+                    
                 }
             }
         }
-
-        #endregion
+    #endregion
     }
 }

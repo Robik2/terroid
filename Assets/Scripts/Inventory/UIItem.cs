@@ -1,3 +1,4 @@
+using Player;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEngine;
@@ -61,8 +62,8 @@ namespace Inventory {
         }
 
         public void DropItems() { // CHANGE THIS SO IT WOULD DROP OUT OF CHARACTER BASED ON ITS FACING DIRECTION
-            Item item = Instantiate(itemSO.itemPrefab, PlayerController.instance.transform.position + Vector3.right, Quaternion.identity).GetComponent<Item>();
-            item.amount = amount;
+            Item item = Instantiate(itemSO.itemPrefab, PlayerController.instance.transform.position, Quaternion.identity).GetComponent<Item>();
+            item.DropItem(PlayerController.instance.GetFacingDirection(), amount);
             Destroy(gameObject);
         }
 

@@ -6,6 +6,7 @@ namespace Inventory {
     public class Item : MonoBehaviour {
         [ShowIf("@IsStackable")]
         public int amount = 1;
+        [SerializeField] private float dropForce;
         [SerializeField] private ItemSO itemSO;
         [SerializeField] private Collider2D collectCol;
         [SerializeField] private ParticleSystem itemHighlight;
@@ -47,6 +48,11 @@ namespace Inventory {
                     Destroy(gameObject);
                 }
             }
+        }
+
+        public void DropItem(Vector2 direction, int newAmount) { // CALLED WHEN THROWING ITEM FROM INVENTORY
+            amount = newAmount;
+            GetComponent<Rigidbody2D>().AddForce(direction * dropForce, ForceMode2D.Impulse);
         }
 
         private bool IsStackable => itemSO == null || itemSO.isStackable;
