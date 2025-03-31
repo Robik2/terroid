@@ -1,19 +1,22 @@
 using Sirenix.OdinInspector;
 using UnityEngine;
+using Inventory;
 
-[CreateAssetMenu(fileName = "NewWeapon", menuName = "Scriptable Objects/Items/Item Weapon SO")]
-public class ItemWeapon : ItemSO {
-    public DamageType damageType;
-    public int damageValue;
-    public int critChance;
-    public float attackSpeed;
+namespace Inventory {
+    [CreateAssetMenu(fileName = "NewWeapon", menuName = "Scriptable Objects/Items/Item Weapon SO")]
+    public class ItemWeapon : ItemSO {
+        public DamageType damageType;
+        public int damageValue;
+        public int critChance;
+        public float attackSpeed;
 
-    [HideIf("damageType", DamageType.melee)]
-    public int range;
+        [HideIf("damageType", DamageType.melee)]
+        public int range;
 
-    public enum DamageType {
-        melee,
-        magic,
-        range
+        public enum DamageType {
+            melee,
+            magic,
+            range
+        }
     }
 }
