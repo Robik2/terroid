@@ -3,6 +3,7 @@ using HealthAndStats;
 using Inventory;
 using Sirenix.OdinInspector;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Player {
     public class PlayerController : MonoBehaviour {
@@ -12,44 +13,35 @@ namespace Player {
             if (instance == null) { instance = this; } else { Destroy(gameObject); }
         }
 
-        [TitleGroup("Moving")] [SerializeField]
-        private float acceleration;
+        [TabGroup("Moving")] [SerializeField] private float acceleration;
+        [TabGroup("Moving")] [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")] private float groundStopMultiplier;
+        [TabGroup("Moving")] [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")] private float airStopMultiplier;
+        [TabGroup("Moving")] [SerializeField] private float maxSpeed;
+        private float currentMaxSpeed, xDirection;
 
-        [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")]
-        private float groundStopMultiplier;
+        [TabGroup("Jumping")] [SerializeField] private float jumpForce;
+        [TabGroup("Jumping")] [SerializeField] private float doubleJumpForce;
+        [TabGroup("Jumping")] [SerializeField] private float coyoteTimeLength;
+        [TabGroup("Jumping")] [SerializeField] private float jumpLength;
+        [TabGroup("Jumping")] [SerializeField] private float jumpCutMult;
+        private float coyoteTimeCounter;
+        private bool isJumping, isGrounded, doubleJump;
+        private Coroutine jumpCoroutine;
 
-        [SerializeField] [Tooltip("0 = instant stop, 1 = no stop")]
-        private float airStopMultiplier;
-
-        [SerializeField] private float maxSpeed;
-        private float currentMaxSpeed;
-
-        [TitleGroup("Jumping")] [SerializeField]
-        private float jumpForce;
-        [SerializeField] private float doubleJumpForce;
-        [SerializeField] private float coyoteTimeLength;
-        [SerializeField] private float jumpLength;
-        [SerializeField] private float jumpCutMult;
-        [SerializeField] private float jumpBufferTime;
-        private float jumpLengthCounter, coyoteTimeCounter, currentJumpForce, jumpPressedTime;
-        private bool jumpPressed, beginJumping, isGrounded, doubleJump;
-
-        [TitleGroup("Dashing")] [SerializeField]
-        private float dashSpeed;
-        [SerializeField] private float dashGravityMult;
-        [SerializeField] private float dashTimeBetweenPresses;
-        [SerializeField] private float dashCD;
-        [SerializeField] private float dashDuration;
-        private float dashPressCounterA, dashPressCounterD;
+        [TabGroup("Dashing")] [SerializeField] private float dashSpeed;
+        [TabGroup("Dashing")] [SerializeField] private float dashGravityMult;
+        [TabGroup("Dashing")] [SerializeField] private float dashTimeBetweenPresses;
+        [TabGroup("Dashing")] [SerializeField] private float dashCD;
+        [TabGroup("Dashing")] [SerializeField] private float dashDuration;
+        private float previousDashDirection, dashPressCounter;
         private bool canDash, isDashing;
 
 
-        [TitleGroup("Transforms")] [SerializeField]
-        private Transform selectedItem;
-        [SerializeField] private Transform groundCheck;
+        [TabGroup("Transforms")] [SerializeField] private Transform selectedItem;
+        [TabGroup("Transforms")] [SerializeField] private Transform groundCheck;
 
-        [TitleGroup("Other")] [SerializeField] private SpriteRenderer rend;
-        [SerializeField] private LayerMask whatIsGround;
+        [TabGroup("Other")] [SerializeField] private SpriteRenderer rend;
+        [TabGroup("Other")] [SerializeField] private LayerMask whatIsGround;
 
         private Vector2 lookDirection;
         private float lookAngle;
@@ -64,34 +56,39 @@ namespace Player {
             currentMaxSpeed = ApplyMaxSpeedBonus();
         }
 
-        private void Update() {
-            JumpInput();
-
-            DashInput();
-
-            MouseInput();
-        }
-
         private void FixedUpdate() {
             CheckGround();
 
             if (!isDashing) { HorizontalMovement(); }
-
-            LookAtMouse();
-
-            if (beginJumping) {
-                Jump();
-                jumpLengthCounter += Time.fixedDeltaTime;
-            }
         }
         
     #region HorizontalMovement
+
+        public void HorizontalMovementInput(InputAction.CallbackContext context) {
+            xDirection = context.ReadValue<float>();
+
+            if (context.performed && canDash == true) { // DASH INPUT
+                if (Time.time - dashPressCounter < dashTimeBetweenPresses && previousDashDirection == xDirection) {
+                    StartCoroutine(Dash(xDirection));
+                } else {
+                    previousDashDirection = xDirection;
+                    dashPressCounter = Time.time;
+                }
+            }
+        }
+        
         private void HorizontalMovement() {
-            //Moving and stoping
-            if (Input.GetAxisRaw("Horizontal") == 0) { rb.linearVelocity = isGrounded ? new Vector2(rb.linearVelocity.x * groundStopMultiplier, rb.linearVelocity.y) : new Vector2(rb.linearVelocity.x * airStopMultiplier, rb.linearVelocity.y); } else { rb.AddForce(IsChangingDirection(Input.GetAxisRaw("Horizontal")) ? new Vector2(acceleration * 3f * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y) : new Vector2(acceleration * Input.GetAxisRaw("Horizontal"), rb.linearVelocity.y)); }
+            //Moving and stopping
+            if (xDirection == 0) { rb.linearVelocity = isGrounded ? 
+                new Vector2(rb.linearVelocity.x * groundStopMultiplier, rb.linearVelocity.y) : 
+                new Vector2(rb.linearVelocity.x * airStopMultiplier, rb.linearVelocity.y); } 
+            else { rb.AddForce(IsChangingDirection(xDirection) ? 
+                new Vector2(acceleration * 3f * xDirection, rb.linearVelocity.y) : 
+                new Vector2(acceleration * xDirection, rb.linearVelocity.y)); }
 
             //speed cap
-            if (rb.linearVelocity.x > currentMaxSpeed) { rb.linearVelocity = new Vector2(currentMaxSpeed, rb.linearVelocity.y); } else if (rb.linearVelocity.x < -currentMaxSpeed) { rb.linearVelocity = new Vector2(-currentMaxSpeed, rb.linearVelocity.y); }
+            if (rb.linearVelocity.x > currentMaxSpeed) { rb.linearVelocity = new Vector2(currentMaxSpeed, rb.linearVelocity.y); } 
+            else if (rb.linearVelocity.x < -currentMaxSpeed) { rb.linearVelocity = new Vector2(-currentMaxSpeed, rb.linearVelocity.y); }
         }
         
         private bool IsChangingDirection(float dir) {
@@ -103,40 +100,59 @@ namespace Player {
         public float ApplyMaxSpeedBonus() {
             return maxSpeed + GetComponent<StatsManager>().MoveSpeedBonus;
         }
+        
+        private IEnumerator Dash(float dir) {
+            canDash = false;
+            isDashing = true;
+
+            print(dir);
+            rb.linearVelocity = new Vector2(dashSpeed * dir, rb.linearVelocity.y * dashGravityMult);
+            
+            yield return new WaitForSeconds(dashDuration);
+            isDashing = false;
+            
+            yield return new WaitForSeconds(dashCD - dashDuration);
+            canDash = true;
+        }
     #endregion
     
     #region VerticalMovement
-        private void JumpInput() {
-            jumpPressed = Input.GetKey(KeyCode.Space);
-            if (Input.GetKeyDown(KeyCode.Space)) { jumpPressedTime = Time.time; }
+        public void JumpInput(InputAction.CallbackContext context) {
+            if (context.performed) {
+                if (isGrounded == true) {
+                    jumpCoroutine = StartCoroutine(Jump(jumpForce));
+                } else if (doubleJump) {
+                    if(jumpCoroutine != null) StopCoroutine(jumpCoroutine);
 
-            if (Time.time - jumpPressedTime < jumpBufferTime && isGrounded) {
-                currentJumpForce = jumpForce;
-                beginJumping = true;
-            } else if (Input.GetKeyDown(KeyCode.Space) && doubleJump) {
-                currentJumpForce = doubleJumpForce;
-                beginJumping = true;
-                doubleJump = false;
+                    doubleJump = false;
+                    jumpCoroutine = StartCoroutine(Jump(doubleJumpForce));
+                }
+            }
+
+            if (context.canceled && isJumping == true) {
+                if(jumpCoroutine != null) StopCoroutine(jumpCoroutine);
+                
+                JumpCut();
             }
         }
 
-        private void Jump() {
-            if (jumpLength < jumpLengthCounter) {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMult);
-                beginJumping = false;
-                jumpLengthCounter = 0;
-                return;
-            }
+        private IEnumerator Jump(float force) {
+            isJumping = true;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
+            
+            
+            yield return new WaitForSeconds(jumpLength);
+            
+            JumpCut();
+        }
 
-            if (jumpPressed) { rb.linearVelocity = new Vector2(rb.linearVelocity.x, currentJumpForce); } else {
-                rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMult);
-                beginJumping = false;
-                jumpLengthCounter = 0;
-            }
+        private void JumpCut() {
+            isJumping = false;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMult);
         }
         
-        private void CheckGround() {
-            if (Physics2D.OverlapBox(new Vector2(groundCheck.position.x, groundCheck.position.y), new Vector2(.98f, .2f), 0, whatIsGround)) {
+        private void CheckGround() { // ITS A LITTLE BIG TO IMITATE JUMP BUFFER
+            if (Physics2D.OverlapBox(new Vector2(groundCheck.position.x, groundCheck.position.y - .1f), new Vector2(.98f, .3f), 0, whatIsGround)) {
                 coyoteTimeCounter = coyoteTimeLength;
                 doubleJump = true;
             } else { coyoteTimeCounter -= Time.fixedDeltaTime; }
@@ -144,47 +160,14 @@ namespace Player {
             isGrounded = coyoteTimeCounter > 0;
         }
     #endregion
-
-    #region Dashing
-        private void DashInput() {
-            if (!canDash) { return; }
-
-            if (Input.GetKeyDown(KeyCode.A)) {
-                if (dashPressCounterA <= 0) { dashPressCounterA = dashTimeBetweenPresses; } else { Dash(-1); }
-            }
-
-            if (Input.GetKeyDown(KeyCode.D)) {
-                if (dashPressCounterD <= 0) { dashPressCounterD = dashTimeBetweenPresses; } else { Dash(1); }
-            }
-
-            dashPressCounterA -= dashPressCounterA > 0 ? Time.deltaTime : 0;
-            dashPressCounterD -= dashPressCounterD > 0 ? Time.deltaTime : 0;
-        }
-
-        private void Dash(int dir) {
-            print("dash");
-            canDash = false;
-            isDashing = true;
-            StartCoroutine(nameof(EnableDash));
-
-            rb.linearVelocity = new Vector2(dashSpeed * dir, rb.linearVelocity.y * dashGravityMult);
-        }
-
-        private IEnumerator EnableDash() {
-            yield return new WaitForSeconds(dashDuration);
-            isDashing = false;
-            yield return new WaitForSeconds(dashCD - dashDuration);
-            canDash = true;
-        }
-    #endregion
     
     #region FacingDirectionAndItemRotation
         public Vector2 GetFacingDirection() {
-            return new Vector2(Mathf.FloorToInt(transform.localScale.x), 1);
+            return new Vector2(Mathf.RoundToInt(transform.localScale.x), 1);
         }
     
-        private void LookAtMouse() {
-            lookDirection = cam.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        public void LookAtMouse(InputAction.CallbackContext context) {
+            lookDirection = cam.ScreenToWorldPoint(context.ReadValue<Vector2>()) - transform.position;
 
             lookAngle = Mathf.Atan2(lookDirection.x, lookDirection.y) * Mathf.Rad2Deg;
 
@@ -196,9 +179,8 @@ namespace Player {
     #endregion
     
     #region UsingHotbarItems
-        private void MouseInput() {
-            
-            if (Input.GetMouseButtonDown(0) && InventoryManager.instance.CanUseItem()) {
+        public void MouseInput(InputAction.CallbackContext context) {
+            if (context.performed && InventoryManager.instance.CanUseItem()) {
                 if (UIInput.instance.IsHoldingItem == true) {
                     UseItem(UIInput.instance.HeldItem);
                 } else if(InventoryManager.instance.selectedSlot.containedItem != null) {
@@ -220,7 +202,7 @@ namespace Player {
     
         private void OnDrawGizmos() {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawCube(groundCheck.position, new Vector3(.98f, .2f, 1));
+            Gizmos.DrawCube(groundCheck.position - new Vector3(0, .1f, 0), new Vector3(.98f, .3f, 1));
         }
     }
 }

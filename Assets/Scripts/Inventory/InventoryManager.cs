@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Player;
+using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,21 +34,17 @@ namespace Inventory {
             SelectSlot(hotbarSlots[0]);
         }
 
-        private void Update() {
-            if (Input.GetButtonDown("Cancel")) {
-                ToggleInventory();
-            }
-        }
-
-        private void ToggleInventory() {
-            inventoryMenu.SetActive(!menuActive);
-            menuActive = !menuActive;
-            UIInput.instance.RMB = false;
-            if (menuActive == false) {
-                foreach (ItemSlot slot in inventorySlots) {
-                    slot.CheckHover();
+        public void ToggleInventory(InputAction.CallbackContext context) {
+            if (context.performed) {
+                inventoryMenu.SetActive(!menuActive);
+                menuActive = !menuActive;
+                UIInput.instance.RMB = false;
+                if (menuActive == false) {
+                    foreach (ItemSlot slot in inventorySlots) {
+                        slot.CheckHover();
+                    }
+                    UIInput.instance.PutItemBackToSlot();
                 }
-                UIInput.instance.PutItemBackToSlot();
             }
         }
 

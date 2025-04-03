@@ -178,8 +178,8 @@ namespace HealthAndStats {
         }
 
 #if UNITY_EDITOR
-        private void Update() {
-            if(Input.GetKeyDown(KeyCode.L))
+        private void Update() { 
+            if(Input.GetKeyDown(KeyCode.L)) // STATS DEBUGGING    DELETE ME LATER
                 Debug.Log($"Max Health: {ManagerHolder.instance.healthManager.MaxHealthAfterBonus}\n" +
                           $"Max Mana: {ManagerHolder.instance.manaManager.MaxManaAfterBonus}\n" +
                           $"Defense: {ManagerHolder.instance.statsManager.Defense}\n" +

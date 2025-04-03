@@ -48,7 +48,7 @@ namespace HealthAndStats {
         
     #if UNITY_EDITOR
         private void Update() {
-            if (Input.GetMouseButtonDown(1)) {
+            if (Input.GetMouseButtonDown(1)) { // USING MANA UNTIL ACTUAL ITEMS THAT USE MANA      DELETE ME LATER
                 ManaCheck(5);
             }
         }

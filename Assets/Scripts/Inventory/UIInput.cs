@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Player;
+using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -38,39 +38,30 @@ namespace Inventory {
         };
 
         private void Update() {
-            if (Input.GetMouseButtonDown(0)) { LeftMouseClick(); }
-
-            RMBInput();
+            if (RMB == true) { // HOLDING ACTION OF RMB
+                SetRMBRefreshTime();
+                if (Time.time - RMBLastCall >= RMBCurrentRefreshTime) RightMouseClick();
+            }
         }
+        
+    #region RMB    
+        public void RMBInput(InputAction.CallbackContext context) {
+            if (context.canceled) { RMB = false; }
 
-        private void RMBInput() {
-            if (Input.GetMouseButtonUp(1)) { RMB = false; }
-
-            if (Input.GetMouseButtonDown(1)) {
+            if (context.performed) {
                 RMB = true;
                 RMBTime = Time.time;
                 RMBLastCall = 1;
             }
-
-            if (RMB == true) {
-                switch (Time.time - RMBTime) {
-                    case < .8f:
-                        RMBCurrentRefreshTime = RMBRefreshTime["slow"];
-                        break;
-
-                    case < 1.5f:
-                        RMBCurrentRefreshTime = RMBRefreshTime["medium"];
-                        break;
-
-                    default:
-                        RMBCurrentRefreshTime = RMBRefreshTime["fast"];
-                        break;
-                }
-
-                if (Time.time - RMBLastCall >= RMBCurrentRefreshTime) RightMouseClick();
-            }
         }
 
+        private void SetRMBRefreshTime() {
+            RMBCurrentRefreshTime = (Time.time - RMBTime) switch {
+                < .8f => RMBRefreshTime["slow"],
+                < 1.5f => RMBRefreshTime["medium"],
+                _ => RMBRefreshTime["fast"]
+            };
+        }
 
         private void RightMouseClick() {
             RMBLastCall = Time.time;
@@ -89,40 +80,42 @@ namespace Inventory {
                 }
             }
         }
+    #endregion
+    
+        public void LMBInput(InputAction.CallbackContext context) {
+            if (context.action.WasPerformedThisFrame()) {
+                print("performed");
+                List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
 
-        private void LeftMouseClick() {
-            List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
+                foreach (var result in results) {
+                    if (result.gameObject.CompareTag("Slot")) {
+                        ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
+                        UIItem item = slot.containedItem;
 
-            // if (isHoldingItem && results.Count == 0) { return; }
+                        if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
+                            ToggleHold(heldItem);
+                            return;
+                        }
 
-            foreach (var result in results) {
-                if (result.gameObject.CompareTag("Slot")) {
-                    ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
-                    UIItem item = slot.containedItem;
+                        if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
+                            InventoryManager.instance.SelectSlot(slot);
+                            return;
+                        }
 
-                    if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
-                        ToggleHold(heldItem);
-                        return;
-                    }
+                        switch (slot.containedItem, isHoldingItem) {
+                            case (not null, false): // PICK UP ITEM
+                                ToggleHold(item);
+                                break;
 
-                    if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
-                        InventoryManager.instance.SelectSlot(slot);
-                        return;
-                    }
+                            case (null, true): // PLACE ITEM ON EMPTY SLOT
+                                PlaceItem(slot, heldItem);
+                                break;
 
-                    switch (slot.containedItem, isHoldingItem) {
-                        case (not null, false): // PICK UP ITEM
-                            ToggleHold(item);
-                            break;
-
-                        case (null, true): // PLACE ITEM ON EMPTY SLOT
-                            PlaceItem(slot, heldItem);
-                            break;
-
-                        case (not null, true): // ADDING TO STACK OR SWAPING ITEM IF CANT
-                            if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false && item.itemSO.isStackable == true) AddItemToStack(item, heldItem);
-                            else SwapItem(slot, heldItem, item);
-                            break;
+                            case (not null, true): // ADDING TO STACK OR SWAPING ITEM IF CANT
+                                if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false && item.itemSO.isStackable == true) AddItemToStack(item, heldItem);
+                                else SwapItem(slot, heldItem, item);
+                                break;
+                        }
                     }
                 }
             }
