@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using ObjectPooling;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -84,7 +85,6 @@ namespace Inventory {
     
         public void LMBInput(InputAction.CallbackContext context) {
             if (context.action.WasPerformedThisFrame()) {
-                print("performed");
                 List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
 
                 foreach (var result in results) {
@@ -191,7 +191,8 @@ namespace Inventory {
 
             InventoryManager.instance.AddItem(heldItem.itemSO, heldItem.amount);
 
-            Destroy(heldItem.gameObject);
+            // Destroy(heldItem.gameObject);
+            ObjectPoolingManager.ReturnObjectToPool(heldItem.gameObject, true);
             ResetHeldItem();
             oldSlot = null;
         }

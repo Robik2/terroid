@@ -3,11 +3,10 @@ using UnityEngine;
 using Inventory;
 
 namespace Inventory {
-    [CreateAssetMenu(fileName = "NewWeapon", menuName = "Scriptable Objects/Items/Item Weapon SO")]
     public class ItemWeapon : ItemSO {
         public DamageType damageType;
         public int damageValue;
-        public int critChance;
+        [LabelText("Crit Chance (0-100)")] public int critChance;
         public float attackSpeed;
 
         [HideIf("damageType", DamageType.melee)]

@@ -15,8 +15,18 @@ MonoBehaviour:
   itemPrefab: {fileID: 326622498500307137, guid: 2533833a2669f03459d482e6a13c70e2, type: 3}
   sprite: {fileID: 21300000, guid: 9f3582ece8bc37e43a285e2eb30f6fc3, type: 3}
   itemName: Mana Potion
+  rarity: 0
   isStackable: 1
   stackLimit: 99
+  isHealingItem: 0
   statsToModify:
   - stat: 1
     value: 15
+    isBuff: 0
+    isMult: 0
+    buffDuration: 0
+  - stat: 6
+    value: 10
+    isBuff: 1
+    isMult: 1
+    buffDuration: 5

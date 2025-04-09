@@ -4,8 +4,9 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace Inventory {
-    [CreateAssetMenu(fileName = "NewConsumable", menuName = "Scriptable Objects/Items/Item Consumable SO")]
+    [CreateAssetMenu(fileName = "NewConsumable", menuName = "Scriptable Objects/Item Consumable SO")]
     public class ItemConsumable : ItemSO {
+        public bool isHealingItem;
         public List<ModifyStat> statsToModify = new();
 
         public enum Restores {
@@ -34,7 +35,7 @@ namespace Inventory {
                     continue;
                 }
 
-                ManagerHolder.instance.statsManager.ApplyBuff(stat.stat, stat.value, stat.buffDuration, stat.isMult);
+                ManagerHolder.instance.statsManager.ApplyBuff(stat.stat, stat.value, stat.buffDuration, stat.isMult, stat.stat.ToString() + itemName.ToString());
             }
         }
 

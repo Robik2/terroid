@@ -1,4 +1,5 @@
 using System.Collections;
+using ObjectPooling;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
@@ -13,11 +14,15 @@ namespace Inventory {
 
         private float spawnTime;
 
-        private void Start() {
+        private void OnEnable() {
             spawnTime = Time.time;
             amount = itemSO.isStackable ? amount : 1;
             SetHighlightColor(InventoryManager.rarityColors[itemSO.rarity.ToString()]);
             StartCoroutine(AllowCollecting());
+        }
+
+        private void OnDisable() {
+            collectCol.excludeLayers = LayerMask.GetMask("Player");
         }
 
         private void SetHighlightColor(Color color) {
@@ -34,7 +39,8 @@ namespace Inventory {
             if (other.CompareTag("Player")) {
                 int leftOverItems = InventoryManager.instance.AddItem(itemSO, amount);
                 if (leftOverItems <= 0) {
-                    Destroy(gameObject);
+                    // Destroy(gameObject);
+                    ObjectPoolingManager.ReturnObjectToPool(gameObject);
                 } else {
                     amount = leftOverItems;
                 }
@@ -45,7 +51,8 @@ namespace Inventory {
                 
                 if (gameObject.GetComponent<Item>().spawnTime < item.spawnTime && item.itemSO.itemName == itemSO.itemName) {
                     item.amount += amount;
-                    Destroy(gameObject);
+                    // Destroy(gameObject);
+                    ObjectPoolingManager.ReturnObjectToPool(gameObject);
                 }
             }
         }

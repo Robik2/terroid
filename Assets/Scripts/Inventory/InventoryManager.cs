@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ObjectPooling;
 using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using UnityEngine;
@@ -83,7 +84,8 @@ namespace Inventory {
         }
 
         public UIItem CreateUiItem(ItemSO itemSO, Transform parent) {
-            UIItem item = Instantiate(ItemUIPrefab, parent).GetComponent<UIItem>();
+            // UIItem item = Instantiate(ItemUIPrefab, parent).GetComponent<UIItem>();
+            UIItem item = ObjectPoolingManager.SpawnObject(ItemUIPrefab, parent).GetComponent<UIItem>();
             item.GetComponent<Image>().sprite = itemSO.sprite;
             item.amountText.enabled = itemSO.isStackable;
             item.name = itemSO.itemName;

@@ -45,6 +45,8 @@ namespace Player {
 
         private Vector2 lookDirection;
         private float lookAngle;
+        private Quaternion toMouseRotation;
+        public Quaternion ToMouseRotation => toMouseRotation;
 
         private Rigidbody2D rb;
         private Camera cam;
@@ -166,38 +168,18 @@ namespace Player {
             return new Vector2(Mathf.RoundToInt(transform.localScale.x), 1);
         }
     
-        public void LookAtMouse(InputAction.CallbackContext context) {
+        private void LookAtMouse(InputAction.CallbackContext context) {
             lookDirection = cam.ScreenToWorldPoint(context.ReadValue<Vector2>()) - transform.position;
 
             lookAngle = Mathf.Atan2(lookDirection.x, lookDirection.y) * Mathf.Rad2Deg;
-
+            
+            toMouseRotation = Quaternion.Euler(new Vector3(0, 0, -lookAngle + 90));
+            
             int scaleX = lookAngle < 0 ? -1 : 1;
-            transform.localScale = new Vector3(scaleX, 1, 1);
+            // transform.localScale = new Vector3(scaleX, 1, 1);
 
-            selectedItem.rotation = Quaternion.Euler(new Vector3(0, 0, -lookAngle));
+            selectedItem.rotation = Quaternion.Euler(new Vector3(0, 0, -lookAngle + 90));
         }
-    #endregion
-    
-    #region UsingHotbarItems
-        public void MouseInput(InputAction.CallbackContext context) {
-            if (context.performed && InventoryManager.instance.CanUseItem()) {
-                if (UIInput.instance.IsHoldingItem == true) {
-                    UseItem(UIInput.instance.HeldItem);
-                } else if(InventoryManager.instance.selectedSlot.containedItem != null) {
-                    UseItem(InventoryManager.instance.selectedSlot.containedItem);
-                }
-            }
-        }
-        
-        private void UseItem(UIItem item) {
-            if (item == null) return;
-
-            item.itemSO.UseItem();
-                
-            if(item.itemSO is ItemConsumable)
-                item.UpdateAmount(-1, true);
-        }
-
     #endregion
     
         private void OnDrawGizmos() {

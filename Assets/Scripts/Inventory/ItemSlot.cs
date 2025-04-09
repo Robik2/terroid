@@ -11,7 +11,7 @@ namespace Inventory {
         private Image image;
         private bool isHoveredOver;
 
-        private void Start() {
+        private void Awake() {
             image = GetComponent<Image>();
             deselectedColor = image.color;
         }

@@ -10,22 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f1b4e22efeb35c4c844b65fffd680b7, type: 3}
-  m_Name: MagicPowerPotion
+  m_Name: HealPotion
   m_EditorClassIdentifier: 
-  itemPrefab: {fileID: 8084792728338340668, guid: 765acebbc8746f242b2d55e47bad4aaf, type: 3}
-  sprite: {fileID: 21300000, guid: 8eb19088163f12941bfecdc67a500740, type: 3}
-  itemName: Magic Power Potion
-  rarity: 2
+  itemPrefab: {fileID: 4177018003346724856, guid: b096cb6d52e91964398282afae9d29fc, type: 3}
+  sprite: {fileID: -7930571331049095873, guid: fd374f73b8f16f94790df119cd575783, type: 3}
+  itemName: Heal Potion
+  rarity: 1
   isStackable: 1
   stackLimit: 99
+  isHealingItem: 1
   statsToModify:
-  - stat: 1
-    value: 5
+  - stat: 0
+    value: 1
     isBuff: 0
     isMult: 0
     buffDuration: 0
-  - stat: 6
-    value: 5
-    isBuff: 1
-    isMult: 0
-    buffDuration: 30

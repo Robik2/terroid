@@ -3,154 +3,72 @@ using Sirenix.OdinInspector;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace HealthAndStats {
     public class StatsManager : MonoBehaviour {
+    #region Stats Variables
         [InfoBox("After finishing debugging on player reset component to base values")] 
-        [SerializeField]
-        private List<float> currentHealthBonuses = new();
-        private List<float> currentHealthMultipliers = new();
-        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.healthManager.MaxHealth, currentHealthBonuses, currentHealthMultipliers));
+        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.healthManager.MaxHealth, ItemSO.StatToChange.maxHealth));
 
-        [SerializeField]
-        private List<float> currentManaBonuses = new();
-        private List<float> currentManaMultipliers = new();
-        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.manaManager.MaxMana, currentManaBonuses, currentManaMultipliers));
+        
+        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.manaManager.MaxMana, ItemSO.StatToChange.maxMana));
 
+        
         [SerializeField] private int defense;
-        private List<float> currentDefenseBonuses = new();
-        private List<float> currentDefenseMultipliers = new();
-        public int Defense => Mathf.RoundToInt(CalculateBonuses(defense, currentDefenseBonuses, currentDefenseMultipliers));
+        public int Defense => Mathf.RoundToInt(CalculateBonuses(defense, ItemSO.StatToChange.defense));
 
+        
         [SerializeField] [LabelText("Crit Chance Bonus (%)")]
         private int critChanceBonus;
-        private List<float> currentCritChanceBonuses = new();
-        private List<float> currentCritChanceMultipliers = new();
-        public int CritChanceBonus => Mathf.RoundToInt(CalculateBonuses(critChanceBonus, currentCritChanceBonuses, currentCritChanceMultipliers));
+        public int CritChanceBonus => Mathf.RoundToInt(CalculateBonuses(critChanceBonus, ItemSO.StatToChange.critChanceBonus));
 
+        
         [SerializeField] [LabelText("Melee Damage Multiplier")]
         private float meleeDamageMult = 1;
-        private List<float> currentMeleeDamageBonuses = new();
-        private List<float> currentMeleeDamageMultipliers = new();
-        public float MeleeDamageMult => CalculateBonuses(meleeDamageMult, currentMeleeDamageBonuses, currentMeleeDamageMultipliers);
+        public float MeleeDamageMult => CalculateBonuses(meleeDamageMult, ItemSO.StatToChange.meleeDamageMult);
 
+        
         [SerializeField] [LabelText("Range Damage Multiplier")]
         private float rangeDamageMult = 1;
-        private List<float> currentRangeDamageBonuses = new();
-        private List<float> currentRangeDamageMultipliers = new();
-        public float RangeDamageMult => CalculateBonuses(rangeDamageMult, currentRangeDamageBonuses, currentRangeDamageMultipliers);
+        public float RangeDamageMult => CalculateBonuses(rangeDamageMult, ItemSO.StatToChange.rangeDamageMult);
 
+        
         [SerializeField] [LabelText("Magic Damage Multiplier")]
         private float magicDamageMult = 1;
-        private List<float> currentMagicDamageBonuses = new();
-        private List<float> currentMagicDamageMultipliers = new();
-        public float MagicDamageMult => CalculateBonuses(magicDamageMult, currentMagicDamageBonuses, currentMagicDamageMultipliers);
+        public float MagicDamageMult => CalculateBonuses(magicDamageMult, ItemSO.StatToChange.magicDamageMult);
 
+        
         [SerializeField] [LabelText("Attack Speed Multiplier")]
         private float attackSpeedMult = 1;
-        private List<float> currentAttackSpeedBonuses = new();
-        private List<float> currentAttackSpeedMultipliers = new();
-        public float AttackSpeedMult => CalculateBonuses(attackSpeedMult, currentAttackSpeedBonuses, currentAttackSpeedMultipliers);
+        public float AttackSpeedMult => CalculateBonuses(attackSpeedMult, ItemSO.StatToChange.attackSpeedMult);
 
+        
         [SerializeField] private float moveSpeedBonus;
-        private List<float> currentMoveSpeedBonuses = new();
-        private List<float> currentMoveSpeedMultipliers = new();
-        public float MoveSpeedBonus => CalculateBonuses(moveSpeedBonus, currentMoveSpeedBonuses, currentMoveSpeedMultipliers);
+        public float MoveSpeedBonus => CalculateBonuses(moveSpeedBonus, ItemSO.StatToChange.moveSpeedBonus);
+    #endregion
+        
+        private Dictionary<string, Buff> allActiveBuffs = new();
         
         public static readonly HashSet<ItemSO.StatToChange> percentageStatChange = new() { ItemSO.StatToChange.meleeDamageMult, ItemSO.StatToChange.rangeDamageMult, ItemSO.StatToChange.magicDamageMult };
         
-        public void ApplyBuff(ItemSO.StatToChange statToChange, float value, float duration, bool isMult) {
-            Debug.Log("In ApplyBuff: " + statToChange + " " + value + " " + duration + " " + isMult);
-            StartCoroutine(StartBuff(statToChange, value, duration, isMult));
-        }
-
-        private IEnumerator StartBuff(ItemSO.StatToChange statToChange, float value, float duration, bool isMult) {
-            List<float> bonusList = null;
-            List<float> multList = null;
-            
-            Debug.Log("At the start of coroutine: " + statToChange + " " + value + " " + duration + " " + isMult);
-            
-            // SEARCHES FOR CORRECT LIST
-            switch (statToChange) {
-                case ItemSO.StatToChange.maxHealth:
-                    Debug.Log(value);
-                    if (isMult == true) multList = currentHealthMultipliers;
-                    else bonusList = currentHealthBonuses;
-                    break;
-                
-                case ItemSO.StatToChange.maxMana:
-                    if (isMult == true) multList = currentManaMultipliers;
-                    else bonusList = currentManaBonuses;
-                    break;
-                
-                case ItemSO.StatToChange.defense:
-                    if (isMult == true) multList = currentDefenseMultipliers;
-                    else bonusList = currentDefenseBonuses;
-                    break;
-                
-                case ItemSO.StatToChange.critChanceBonus:
-                    if (isMult == true) multList = currentCritChanceMultipliers;
-                    else bonusList = currentCritChanceBonuses;
-                    break;
-                
-                case ItemSO.StatToChange.meleeDamageMult:
-                    if (isMult == true) multList = currentMeleeDamageMultipliers;
-                    else {
-                        value /= 100; // e.g. 5(%) = 0.05
-                        bonusList = currentMeleeDamageBonuses;
-                    }
-                    break;
-                
-                case ItemSO.StatToChange.rangeDamageMult:
-                    if (isMult == true) multList = currentRangeDamageMultipliers;
-                    else {
-                        value /= 100; // e.g. 5(%) = 0.05
-                        bonusList = currentRangeDamageBonuses;
-                    }
-                    break;
-                
-                case ItemSO.StatToChange.magicDamageMult:
-                    if (isMult == true) multList = currentMagicDamageMultipliers;
-                    else {
-                        value /= 100; // e.g. 5(%) = 0.05
-                        bonusList = currentMagicDamageBonuses;
-                    }
-                    break;
-                
-                case ItemSO.StatToChange.attackSpeedMult:
-                    if (isMult == true) multList = currentAttackSpeedMultipliers;
-                    else {
-                        value /= 100; // e.g. 5(%) = 0.05
-                        bonusList = currentAttackSpeedBonuses;
-                    }
-                    break;
-                
-                case ItemSO.StatToChange.moveSpeedBonus:
-                    if (isMult == true) multList = currentMoveSpeedMultipliers;
-                    else bonusList = currentMoveSpeedBonuses;
-                    break;
-            }
-
-            if (bonusList != null) {
-                bonusList.Add(value);
-                Debug.Log("After adding to bonus list");
+        public void ApplyBuff(ItemSO.StatToChange statToChange, float newValue, float duration, bool newIsMult, string newBuffName) {
+            // IF THE SAME BUFF IS ACTIVE THEN REFRESH IT
+            if (allActiveBuffs.TryGetValue(newBuffName, out Buff buff)) {
+                buff.buffStartTime = Time.time;
             } else {
-                multList.Add(value);
-                Debug.Log("After adding to mult list: " + multList[0] + " " + currentMeleeDamageMultipliers[0]);
+                buff = new Buff() {
+                    buffName = newBuffName,
+                    buffStartTime = Time.time,
+                    buffDuration = duration,
+                    isMult = newIsMult,
+                    stat = statToChange,
+                    value = newValue
+                };
+                
+                allActiveBuffs.Add(newBuffName, buff);
+                UpdateHealthAndMana(statToChange);
             }
-            
-            
-            UpdateHealthAndMana(statToChange);
-
-            yield return new WaitForSeconds(duration);
-            
-            if (bonusList != null) {
-                bonusList.Remove(Mathf.RoundToInt(value));
-            } else {
-                multList.Remove(value);
-            }
-            
-            UpdateHealthAndMana(statToChange);
         }
 
         private void UpdateHealthAndMana(ItemSO.StatToChange statToChange) {
@@ -164,22 +82,44 @@ namespace HealthAndStats {
             }
         }
 
-        private float CalculateBonuses(float stat, List<float> bonuses, List<float> multipliers) {
+        private float CalculateBonuses(float statValue, ItemSO.StatToChange stat) {
+            float bonus = 0;
+            List<float> mults = new();
             
-            foreach (float bonus in bonuses) {
-                stat += bonus;
+            foreach (KeyValuePair<string, Buff> buff in allActiveBuffs) {
+                if (buff.Value.stat != stat) continue;
+                
+                if (buff.Value.isMult) mults.Add(buff.Value.value/100f);
+                else bonus += buff.Value.value;
             }
 
-            foreach (float mult in multipliers) {
-                stat *= mult;
+            statValue += bonus;
+            foreach (float m in mults) {
+                statValue *= 1+m;
             }
-
-            return stat;
+            
+            return statValue;
         }
 
+        private void BuffTimer() {
+            List<string> expiredBuffs = new();
+
+            foreach (KeyValuePair<string, Buff> buff in allActiveBuffs) {
+                if (Time.time - buff.Value.buffStartTime >= buff.Value.buffDuration) expiredBuffs.Add(buff.Key);
+            }
+
+            foreach (string s in expiredBuffs) {
+                allActiveBuffs.Remove(s);
+            }
+        }
+        
+        private void Update() {
+            BuffTimer();
+            // DisplayBuffOnUI();
+            //DO THIS ONE LATER
+            
 #if UNITY_EDITOR
-        private void Update() { 
-            if(Input.GetKeyDown(KeyCode.L)) // STATS DEBUGGING    DELETE ME LATER
+            if(Input.GetKeyDown(KeyCode.L)) // STATS DEBUGGING
                 Debug.Log($"Max Health: {ManagerHolder.instance.healthManager.MaxHealthAfterBonus}\n" +
                           $"Max Mana: {ManagerHolder.instance.manaManager.MaxManaAfterBonus}\n" +
                           $"Defense: {ManagerHolder.instance.statsManager.Defense}\n" +
@@ -189,7 +129,17 @@ namespace HealthAndStats {
                           $"Magic Damage Mult: {ManagerHolder.instance.statsManager.MagicDamageMult}\n" +
                           $"Attack Speed Mult: {ManagerHolder.instance.statsManager.AttackSpeedMult}\n" +
                           $"Move Speed Bonus: {ManagerHolder.instance.statsManager.MoveSpeedBonus}");
-        }
 #endif
+        }
+    }
+    
+    public class Buff {
+        public string buffName;
+        public Sprite buffIcon;
+        public float buffStartTime;
+        public float buffDuration;
+        public ItemSO.StatToChange stat;
+        public float value;
+        public bool isMult;
     }
 }

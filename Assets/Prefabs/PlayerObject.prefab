@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 7138812677337414157}
   - component: {fileID: 1628534525848722227}
   - component: {fileID: 3390656987154550638}
+  - component: {fileID: 5199753781007641792}
   - component: {fileID: 7176217812064731780}
   m_Layer: 3
   m_Name: PlayerObject
@@ -205,8 +206,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b997872e1bf91047ab4d1affd080e3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentHealthBonuses: []
-  currentManaBonuses: []
   defense: 0
   critChanceBonus: 0
   meleeDamageMult: 1
@@ -246,6 +245,19 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
+--- !u!114 &5199753781007641792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1669113222498102365}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f08c27a0b5d07f4187c96ce6042b7a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healingCooldown: 10
 --- !u!114 &7176217812064731780
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -305,9 +317,21 @@ MonoBehaviour:
     m_ActionName: 'Player/Jump[/Keyboard/space]'
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 3390656987154550638}
-        m_TargetAssemblyTypeName: Player.PlayerController, Assembly-CSharp
+      - m_Target: {fileID: 5199753781007641792}
+        m_TargetAssemblyTypeName: Player.UsingItems, Assembly-CSharp
         m_MethodName: MouseInput
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Inventory.UIInput, Assembly-CSharp
+        m_MethodName: LMBInput
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -375,6 +399,38 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: a22690ae-c6db-4d8c-b32a-f385252a1736
     m_ActionName: 'Player/MousePosition[/Mouse/position]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Inventory.UIInput, Assembly-CSharp
+        m_MethodName: RMBInput
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: d364cb8e-46dd-4980-af0c-5c2ac014eb37
+    m_ActionName: 'Player/RightMouseButton[/Mouse/rightButton]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Inventory.InventoryManager, Assembly-CSharp
+        m_MethodName: ToggleInventory
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 79157ace-b4a0-44ed-aab8-7cfadceff608
+    m_ActionName: 'Player/Cancel[/Keyboard/escape]'
   m_NeverAutoSwitchControlSchemes: 1
   m_DefaultControlScheme: Keyboard&Mouse
   m_DefaultActionMap: Player

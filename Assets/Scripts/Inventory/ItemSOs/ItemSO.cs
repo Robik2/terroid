@@ -33,5 +33,7 @@ namespace Inventory {
         };
 
         public virtual void UseItem() { }
+        
+        public virtual void UseItem(Transform t) { }
     }
 }
