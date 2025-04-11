@@ -34,6 +34,6 @@ namespace Inventory {
 
         public virtual void UseItem() { }
         
-        public virtual void UseItem(Transform t) { }
+        public virtual void UseItem(Transform t, int currentAnim) { }
     }
 }

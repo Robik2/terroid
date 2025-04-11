@@ -1,6 +1,4 @@
 using Sirenix.OdinInspector;
-using UnityEngine;
-using Inventory;
 
 namespace Inventory {
     public class ItemWeapon : ItemSO {
@@ -11,6 +9,12 @@ namespace Inventory {
 
         [HideIf("damageType", DamageType.melee)]
         public int range;
+        
+        [ShowIf("damageType", DamageType.melee)]
+        public int animCount;
+        
+        [ShowIf("damageType", DamageType.melee)]
+        public float comboDuration;
 
         public enum DamageType {
             melee,

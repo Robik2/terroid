@@ -11,8 +11,11 @@ namespace Player {
         private bool LMB;
         private bool canHeal;
 
+        private int currentItemAnim;
+        
         private void Start() {
             canHeal = true;
+            currentItemAnim = 0;
         }
 
         private void Update() {
@@ -39,8 +42,8 @@ namespace Player {
                 case ItemWeapon weapon:
                     if (Time.time - lastWeaponUse < 1f / weapon.attackSpeed) return;
                     
+                    weapon.UseItem(transform, AnimToPlay(weapon));
                     lastWeaponUse = Time.time;
-                    weapon.UseItem(transform);
                     break;
                 
                 case ItemConsumable consumable:
@@ -52,9 +55,20 @@ namespace Player {
                         lastHealingUse = Time.time;
                         canHeal = false;
                         consumable.UseItem();
+                        item.UpdateAmount(-1, false);
                     }
                     break;
             }
+        }
+
+        private int AnimToPlay(ItemWeapon item) {
+            if (Time.time - lastWeaponUse > item.comboDuration || currentItemAnim == item.animCount) { // IF PLAYER DIDNT USE WEAPON QUICKLY ENOUGH OR IT REACHING LAST ANIMATION THEN SET IT BACK TO FIRST
+                currentItemAnim = 1;
+            } else {
+                currentItemAnim++;
+            }
+                
+            return currentItemAnim;
         }
     }
 }

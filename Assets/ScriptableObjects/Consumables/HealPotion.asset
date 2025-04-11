@@ -21,7 +21,7 @@ MonoBehaviour:
   isHealingItem: 1
   statsToModify:
   - stat: 0
-    value: 1
+    value: 5
     isBuff: 0
     isMult: 0
     buffDuration: 0

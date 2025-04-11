@@ -23,4 +23,6 @@ MonoBehaviour:
   critChance: 15
   attackSpeed: 2.5
   range: 0
+  animCount: 2
+  comboDuration: 0.5
   swordSlash: {fileID: 6681711915746687228, guid: 31da265257f1bda41a838d82011b1aca, type: 3}

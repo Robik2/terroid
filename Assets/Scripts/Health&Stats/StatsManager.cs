@@ -9,10 +9,10 @@ namespace HealthAndStats {
     public class StatsManager : MonoBehaviour {
     #region Stats Variables
         [InfoBox("After finishing debugging on player reset component to base values")] 
-        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.healthManager.MaxHealth, ItemSO.StatToChange.maxHealth));
+        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(GetComponent<HealthManager>().MaxHealth, ItemSO.StatToChange.maxHealth));
 
         
-        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(ManagerHolder.instance.manaManager.MaxMana, ItemSO.StatToChange.maxMana));
+        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(GetComponent<ManaManager>().MaxMana, ItemSO.StatToChange.maxMana));
 
         
         [SerializeField] private int defense;

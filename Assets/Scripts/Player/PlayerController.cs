@@ -43,6 +43,7 @@ namespace Player {
         [TabGroup("Other")] [SerializeField] private SpriteRenderer rend;
         [TabGroup("Other")] [SerializeField] private LayerMask whatIsGround;
 
+        private Vector3 mousePos;
         private Vector2 lookDirection;
         private float lookAngle;
         private Quaternion toMouseRotation;
@@ -62,6 +63,10 @@ namespace Player {
             CheckGround();
 
             if (!isDashing) { HorizontalMovement(); }
+        }
+
+        private void Update() {
+            LookAtMouse();
         }
         
     #region HorizontalMovement
@@ -107,7 +112,6 @@ namespace Player {
             canDash = false;
             isDashing = true;
 
-            print(dir);
             rb.linearVelocity = new Vector2(dashSpeed * dir, rb.linearVelocity.y * dashGravityMult);
             
             yield return new WaitForSeconds(dashDuration);
@@ -167,18 +171,21 @@ namespace Player {
         public Vector2 GetFacingDirection() {
             return new Vector2(Mathf.RoundToInt(transform.localScale.x), 1);
         }
-    
-        private void LookAtMouse(InputAction.CallbackContext context) {
-            lookDirection = cam.ScreenToWorldPoint(context.ReadValue<Vector2>()) - transform.position;
 
+        private void LookAtMouse() {
+            lookDirection = mousePos - transform.position;
+            
             lookAngle = Mathf.Atan2(lookDirection.x, lookDirection.y) * Mathf.Rad2Deg;
+
+            rend.flipX = lookAngle < 0;
             
             toMouseRotation = Quaternion.Euler(new Vector3(0, 0, -lookAngle + 90));
             
-            int scaleX = lookAngle < 0 ? -1 : 1;
-            // transform.localScale = new Vector3(scaleX, 1, 1);
-
             selectedItem.rotation = Quaternion.Euler(new Vector3(0, 0, -lookAngle + 90));
+        }
+        
+        public void MousePosition(InputAction.CallbackContext context) {
+            mousePos = cam.ScreenToWorldPoint(context.ReadValue<Vector2>());
         }
     #endregion
     
