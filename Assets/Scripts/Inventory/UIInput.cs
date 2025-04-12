@@ -155,6 +155,11 @@ namespace Inventory {
     #region ManagingItemSlot
 
         private void PlaceItem(ItemSlot slot, UIItem item) {
+            if (slot.slotType != ItemSlot.SlotType.Inventory) { // MAKING SURE THAT ARMOR SLOTS ARE NOT OCCUPIED BY WRONGITEMS
+                if (item.itemSO is not ItemArmor armor) { return; }
+                if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
+            }
+            
             if (item.slot != null && item.slot.containedItem != null) {
                 if (item.slot.containedItem.isDividedByRMB == false) { item.slot.containedItem = null; }
             }
@@ -171,6 +176,11 @@ namespace Inventory {
         }
 
         private void SwapItem(ItemSlot slot, UIItem item, UIItem slotItem) {
+            if (slot.slotType != ItemSlot.SlotType.Inventory) { // MAKING SURE THAT ARMOR SLOTS ARE NOT OCCUPIED BY WRONGITEMS
+                if (item.itemSO is not ItemArmor armor) { return; }
+                if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
+            }
+            
             if (item.slot != null) { item.slot.containedItem = null; }
 
             slot.containedItem = item;

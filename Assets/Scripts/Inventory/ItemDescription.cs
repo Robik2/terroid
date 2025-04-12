@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using HealthAndStats;
+using Player;
 using TMPro;
 using UnityEngine;
 
@@ -15,12 +13,36 @@ namespace Inventory {
 
         [SerializeField] private TMP_Text itemName;
         [SerializeField] private TMP_Text description;
-        [SerializeField] private GameObject panel;
+        [SerializeField] private RectTransform panel;
+        [SerializeField] private Canvas canvas;
 
         private void Update() {
-            panel.SetActive(InventoryManager.instance.CanDisplayDescription());
+            panel.gameObject.SetActive(InventoryManager.instance.CanDisplayDescription());
+            
+            transform.position = PlayerController.instance.MousePos;
+            ManagePivot();
+        }
 
-            transform.position = Input.mousePosition;
+        private void ManagePivot() {
+            Vector2 screenPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvas.transform as RectTransform,
+                PlayerController.instance.MousePos,
+                canvas.worldCamera,
+                out screenPos
+            );
+
+            float pivotWorldOffsetX = 1f / panel.rect.width;
+            float pivotWorldOffsetY = 1f / panel.rect.height;
+
+            float pivotX = 1 - Mathf.Clamp(pivotWorldOffsetX * (Screen.width/2f - screenPos.x), 0, 1);
+            float pivotY = Mathf.Clamp(pivotWorldOffsetY * (Screen.height/2f + screenPos.y), 0, 1);
+            
+            pivotX = Screen.width/2f - screenPos.x < panel.rect.width ? pivotX : 0;
+            pivotY = Screen.height/2f + screenPos.y < panel.rect.height ? pivotY : 1;
+            
+            panel.pivot = new Vector2(pivotX, pivotY);
+            print(panel.pivot);
         }
 
         public void UpdateDescription(ItemSO itemSO) {

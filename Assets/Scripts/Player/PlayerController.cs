@@ -43,7 +43,9 @@ namespace Player {
         [TabGroup("Other")] [SerializeField] private SpriteRenderer rend;
         [TabGroup("Other")] [SerializeField] private LayerMask whatIsGround;
 
+        private Vector3 mousePosWorldPoint;
         private Vector3 mousePos;
+        public Vector3 MousePos => mousePos;
         private Vector2 lookDirection;
         private float lookAngle;
         private Quaternion toMouseRotation;
@@ -173,7 +175,7 @@ namespace Player {
         }
 
         private void LookAtMouse() {
-            lookDirection = mousePos - transform.position;
+            lookDirection = mousePosWorldPoint - transform.position;
             
             lookAngle = Mathf.Atan2(lookDirection.x, lookDirection.y) * Mathf.Rad2Deg;
 
@@ -185,7 +187,8 @@ namespace Player {
         }
         
         public void MousePosition(InputAction.CallbackContext context) {
-            mousePos = cam.ScreenToWorldPoint(context.ReadValue<Vector2>());
+            mousePosWorldPoint = cam.ScreenToWorldPoint(context.ReadValue<Vector2>());
+            mousePos = context.ReadValue<Vector2>();
         }
     #endregion
     

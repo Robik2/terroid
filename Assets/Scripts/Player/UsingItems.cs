@@ -54,9 +54,10 @@ namespace Player {
 
                         lastHealingUse = Time.time;
                         canHeal = false;
-                        consumable.UseItem();
-                        item.UpdateAmount(-1, false);
                     }
+                    
+                    consumable.UseItem();
+                    item.UpdateAmount(-1, false);
                     break;
             }
         }

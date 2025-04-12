@@ -14,10 +14,12 @@ namespace Inventory {
         }
 
         [SerializeField] private GameObject inventoryMenu;
+        [SerializeField] private GameObject equipmentMenu;
         [HideInInspector] public bool menuActive;
         [HideInInspector] public bool isHoveringOverSlot;
         public ItemSlot[] hotbarSlots;
         public ItemSlot[] inventorySlots;
+        public ItemSlot[] equipmentSlots;
         public GameObject ItemUIPrefab;
         [ReadOnly] public ItemSlot selectedSlot;
 
@@ -38,6 +40,7 @@ namespace Inventory {
         public void ToggleInventory(InputAction.CallbackContext context) {
             if (context.performed) {
                 inventoryMenu.SetActive(!menuActive);
+                equipmentMenu.SetActive(!menuActive);
                 menuActive = !menuActive;
                 UIInput.instance.RMB = false;
                 if (menuActive == false) {

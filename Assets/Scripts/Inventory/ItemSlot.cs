@@ -10,6 +10,7 @@ namespace Inventory {
         private Color deselectedColor;
         private Image image;
         private bool isHoveredOver;
+        public SlotType slotType;
 
         private void Awake() {
             image = GetComponent<Image>();
@@ -40,7 +41,6 @@ namespace Inventory {
             InventoryManager.instance.SetCanUseItem(false);
             
             if (containedItem == null) return;
-            
 
             ItemDescription.instance.UpdateDescription(containedItem.itemSO);
         }
@@ -58,6 +58,14 @@ namespace Inventory {
                 InventoryManager.instance.SetCanUseItem(true);
                 isHoveredOver = false;
             }
+        }
+
+        public enum SlotType {
+            Inventory,
+            Head,
+            Chest,
+            Legs
+            //  MAY ADD SOMETHING LIKE ACCESSORY/VANITY LATER
         }
     }
 }

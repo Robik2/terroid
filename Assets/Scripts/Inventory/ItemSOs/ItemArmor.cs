@@ -9,9 +9,9 @@ namespace Inventory {
         public List<ModifyStat> statsToModify = new();
 
         public enum ArmorType {
-            head,
-            chest,
-            legs
+            Head,
+            Chest,
+            Legs
         }
 
         [System.Serializable]
