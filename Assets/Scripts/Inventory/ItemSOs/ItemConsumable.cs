@@ -35,12 +35,12 @@ namespace Inventory {
                     continue;
                 }
 
-                ManagerHolder.instance.statsManager.ApplyBuff(stat.stat, stat.value, stat.buffDuration, stat.isMult, stat.stat.ToString() + itemName.ToString());
+                ManagerHolder.instance.statsManager.ApplyBuff(stat.stat, stat.value, stat.buffDuration, stat.isMult, stat.stat + itemName);
             }
         }
 
         private void RestoreStat(ModifyStat stat) {
-            if (stat.stat == StatToChange.maxHealth) ManagerHolder.instance.healthManager.RestoreHealth(stat.value);
+            if (stat.stat == StatToChange.MaxHealth) ManagerHolder.instance.healthManager.RestoreHealth(stat.value);
             else ManagerHolder.instance.manaManager.RestoreMana(Mathf.RoundToInt(stat.value));
         }
     }

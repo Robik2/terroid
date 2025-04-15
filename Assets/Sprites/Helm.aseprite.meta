@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 2ff1ba73f83aeca4bacf9beaf5420126
+guid: de11529d432057e49b5e87374bd92db5
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -98,7 +98,7 @@ ScriptedImporter:
     addSortingGroup: 1
     addShadowCasters: 0
   importFileNodeState: 1
-  platformSettingsDirtyTick: 638803479782739024
+  platformSettingsDirtyTick: 638803479748958722
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -123,7 +123,7 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: Chestplate
+  - name: Helm
     originalName: 
     pivot: {x: 0.5, y: 0.5}
     alignment: 9
@@ -133,9 +133,9 @@ ScriptedImporter:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 64
-      height: 60
-    spriteID: 9e3cbbbd473c13a429117957841972f1
+      width: 58
+      height: 64
+    spriteID: 006648a9ecbcee346b834ec2d1de2b44
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -147,21 +147,21 @@ ScriptedImporter:
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: 669438785
-    name: Chestplate
+    guid: 1051109410
+    name: Helm
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: Chestplate
+    - name: Helm
       frameIndex: 0
       additiveSortOrder: 0
       cellRect:
-        x: 0
-        y: 2
-        width: 64
-        height: 60
-      spriteId: 9e3cbbbd473c13a429117957841972f1
+        x: 3
+        y: 0
+        width: 58
+        height: 64
+      spriteId: 006648a9ecbcee346b834ec2d1de2b44
     linkedCells: []
     parentIndex: -1
   platformSettings:

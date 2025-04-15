@@ -90,7 +90,7 @@ namespace Inventory {
                 foreach (var result in results) {
                     if (result.gameObject.CompareTag("Slot")) {
                         ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
-                        UIItem item = slot.containedItem;
+                        UIItem item = slot.ContainedItem;
 
                         if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
                             ToggleHold(heldItem);
@@ -102,7 +102,7 @@ namespace Inventory {
                             return;
                         }
 
-                        switch (slot.containedItem, isHoldingItem) {
+                        switch (slot.ContainedItem, isHoldingItem) {
                             case (not null, false): // PICK UP ITEM
                                 ToggleHold(item);
                                 break;
@@ -133,7 +133,7 @@ namespace Inventory {
         private void ToggleHold(UIItem item) { // WHEN NOT SWITCHING
             item.ToggleHold();
             if (item.slot != null) {
-                item.slot.containedItem = null;
+                item.slot.ContainedItem = null;
                 item.slot = null;
             }
 
@@ -160,17 +160,17 @@ namespace Inventory {
                 if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
             }
             
-            if (item.slot != null && item.slot.containedItem != null) {
-                if (item.slot.containedItem.isDividedByRMB == false) { item.slot.containedItem = null; }
+            if (item.slot != null && item.slot.ContainedItem != null) {
+                if (item.slot.ContainedItem.isDividedByRMB == false) { item.slot.ContainedItem = null; }
             }
 
             ToggleHold(item, slot);
 
-            slot.containedItem = item;
+            slot.ContainedItem = item;
 
             item.slot = slot;
 
-            if (oldSlot != null && oldSlot.containedItem != null) oldSlot.containedItem.isDividedByRMB = false;
+            if (oldSlot != null && oldSlot.ContainedItem != null) oldSlot.ContainedItem.isDividedByRMB = false;
             oldSlot = null;
             InventoryManager.instance.isHoveringOverSlot = true;
         }
@@ -181,9 +181,9 @@ namespace Inventory {
                 if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
             }
             
-            if (item.slot != null) { item.slot.containedItem = null; }
+            if (item.slot != null) { item.slot.ContainedItem = null; }
 
-            slot.containedItem = item;
+            slot.ContainedItem = item;
 
             item.slot = slot;
             slotItem.slot = null;
@@ -232,7 +232,7 @@ namespace Inventory {
 
             UIItem newItem = InventoryManager.instance.CreateUiItem(item.itemSO, item.transform);
 
-            if (item.amount == 1) { item.slot.containedItem = null; }
+            if (item.amount == 1) { item.slot.ContainedItem = null; }
 
             ToggleHold(newItem);
 
@@ -245,7 +245,7 @@ namespace Inventory {
             if (item.itemSO.isStackable == false) return;
             if (heldItem.amount == heldItem.itemSO.stackLimit) return;
 
-            if (item.amount == 1) { item.slot.containedItem = null; }
+            if (item.amount == 1) { item.slot.ContainedItem = null; }
 
             heldItem.UpdateAmount(1, false);
             item.UpdateAmount(-1, false);

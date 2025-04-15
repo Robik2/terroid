@@ -66,21 +66,21 @@ namespace Inventory {
         private (ItemSlot slot, bool stackFound) SearchForSlot(ItemSO itemSO) {
             ItemSlot foundSlot = null;
             foreach (ItemSlot slot in hotbarSlots) {
-                if (slot.containedItem != null
-                    && slot.containedItem.itemSO.itemName == itemSO.itemName
-                    && slot.containedItem.isFull == false
-                    && slot.containedItem.itemSO.isStackable == true) { return (slot, true); }
+                if (slot.ContainedItem != null
+                    && slot.ContainedItem.itemSO.itemName == itemSO.itemName
+                    && slot.ContainedItem.isFull == false
+                    && slot.ContainedItem.itemSO.isStackable == true) { return (slot, true); }
 
-                if (slot.containedItem == null && foundSlot == null) { foundSlot = slot; }
+                if (slot.ContainedItem == null && foundSlot == null) { foundSlot = slot; }
             }
 
             foreach (ItemSlot slot in inventorySlots) {
-                if (slot.containedItem != null
-                    && slot.containedItem.itemSO.itemName == itemSO.itemName
-                    && slot.containedItem.isFull == false
-                    && slot.containedItem.itemSO.isStackable == true) { return (slot, true); }
+                if (slot.ContainedItem != null
+                    && slot.ContainedItem.itemSO.itemName == itemSO.itemName
+                    && slot.ContainedItem.isFull == false
+                    && slot.ContainedItem.itemSO.isStackable == true) { return (slot, true); }
 
-                if (slot.containedItem == null && foundSlot == null) { foundSlot = slot; }
+                if (slot.ContainedItem == null && foundSlot == null) { foundSlot = slot; }
             }
 
             return (foundSlot, false);

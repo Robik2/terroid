@@ -40,7 +40,6 @@ namespace Inventory {
         }
 
         public void DropItems() {
-            // Item item = Instantiate(itemSO.itemPrefab, PlayerController.instance.transform.position, Quaternion.identity).GetComponent<Item>();
             Item item = ObjectPoolingManager.SpawnObject(itemSO.itemPrefab.gameObject, PlayerController.instance.transform.position, Quaternion.identity, ObjectPoolingManager.PoolingParent.Item).GetComponent<Item>();
             item.DropItem(PlayerController.instance.GetFacingDirection(), amount);
             ObjectPoolingManager.ReturnObjectToPool(gameObject, true);
@@ -53,12 +52,13 @@ namespace Inventory {
 
             if (amount <= 0) {
                 if (resetHeldItem == true) {
-                    if (slot != null) slot.containedItem = null;
+                    if (slot != null) slot.ContainedItem = null;
                     UIInput.instance.ResetHeldItem();
                 }
 
-                // Destroy(gameObject);
+                UIInput.instance.ResetHeldItem();
                 ObjectPoolingManager.ReturnObjectToPool(gameObject,true);
+                print("HAHA");
             }
 
             isFull = amount >= itemSO.stackLimit;

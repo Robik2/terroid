@@ -42,7 +42,6 @@ namespace Inventory {
             pivotY = Screen.height/2f + screenPos.y < panel.rect.height ? pivotY : 1;
             
             panel.pivot = new Vector2(pivotX, pivotY);
-            print(panel.pivot);
         }
 
         public void UpdateDescription(ItemSO itemSO) {
@@ -50,13 +49,22 @@ namespace Inventory {
             itemName.color = InventoryManager.rarityColors[itemSO.rarity.ToString()];
 
             string descriptionText = "";
-
+            
+            
             switch (itemSO) {
                 case ItemConsumable item:
                     foreach (ItemConsumable.ModifyStat modifyStat in item.statsToModify) {
-                        string statString = SplitStatName(modifyStat.stat.ToString());
+                        string statString = SplitStatName(modifyStat.stat.ToString(), true);
+                        string value = ValueToText(modifyStat.value, modifyStat.stat, false);
 
-                        descriptionText += $"Restores {statString} by {modifyStat.value}\n";
+                        if (modifyStat.isBuff) {
+                            string modifierText = modifyStat.value < 0 ? "decreased" : "increased";
+                            descriptionText += $"{statString} is {modifierText} by {value} for {modifyStat.buffDuration}s\n";
+                        } else {
+                            string modifierText = modifyStat.value < 0 ? "Lose" : "Restore";
+                            descriptionText += $"{modifierText} {value} {statString}\n";
+                        }
+                            
                     }
 
                     break;
@@ -70,11 +78,9 @@ namespace Inventory {
                 case ItemArmor item:
                     foreach (ItemArmor.ModifyStat modifyStat in item.statsToModify) {
                         string statString = SplitStatName(modifyStat.stat.ToString());
-
-                        if (StatsManager.percentageStatChange.Contains(modifyStat.stat))
-                            descriptionText += $"+{modifyStat.value}% {statString}\n";
-                        else
-                            descriptionText += $"+{modifyStat.value} {statString}\n";
+                        string value = ValueToText(modifyStat.value, modifyStat.stat);
+                        
+                        descriptionText += $"{value} {statString}\n";
                     }
 
                     break;
@@ -83,8 +89,22 @@ namespace Inventory {
             description.text = descriptionText;
         }
 
-        private string SplitStatName(string statName) {
-            return System.Text.RegularExpressions.Regex.Replace(statName, "(\\B[A-Z])", " $1").ToLower();
+        private string SplitStatName(string statName, bool deleteMax = false) {
+            statName = System.Text.RegularExpressions.Regex.Replace(statName, "(\\B[A-Z])", " $1");
+
+            if (deleteMax == true) statName = statName.Replace("Max ", "");
+            
+            return statName;
+        }
+
+        private string ValueToText(float value, ItemSO.StatToChange stat, bool addSign = true) {
+            string valueText = value >= 0 ? "+" + value : value.ToString();
+            
+            if (addSign == false) valueText = valueText.Replace("-", "").Replace("+", "");
+            
+            if (StatsManager.percentageStatChange.Contains(stat)) valueText += "%";
+
+            return valueText;
         }
     }
 }

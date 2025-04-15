@@ -9,48 +9,65 @@ namespace HealthAndStats {
     public class StatsManager : MonoBehaviour {
     #region Stats Variables
         [InfoBox("After finishing debugging on player reset component to base values")] 
-        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(GetComponent<HealthManager>().MaxHealth, ItemSO.StatToChange.maxHealth));
+        public int MaxHealth => Mathf.RoundToInt(CalculateBonuses(GetComponent<HealthManager>().MaxHealth, ItemSO.StatToChange.MaxHealth));
 
         
-        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(GetComponent<ManaManager>().MaxMana, ItemSO.StatToChange.maxMana));
+        public int MaxMana => Mathf.RoundToInt(CalculateBonuses(GetComponent<ManaManager>().MaxMana, ItemSO.StatToChange.MaxMana));
 
         
         [SerializeField] private int defense;
-        public int Defense => Mathf.RoundToInt(CalculateBonuses(defense, ItemSO.StatToChange.defense));
+        public int Defense => Mathf.RoundToInt(CalculateBonuses(defense, ItemSO.StatToChange.Defense));
 
         
         [SerializeField] [LabelText("Crit Chance Bonus (%)")]
         private int critChanceBonus;
-        public int CritChanceBonus => Mathf.RoundToInt(CalculateBonuses(critChanceBonus, ItemSO.StatToChange.critChanceBonus));
+        public int CritChanceBonus => Mathf.RoundToInt(CalculateBonuses(critChanceBonus, ItemSO.StatToChange.CritChanceBonus));
 
         
         [SerializeField] [LabelText("Melee Damage Multiplier")]
         private float meleeDamageMult = 1;
-        public float MeleeDamageMult => CalculateBonuses(meleeDamageMult, ItemSO.StatToChange.meleeDamageMult);
+        public float MeleeDamageMult => CalculateBonuses(meleeDamageMult, ItemSO.StatToChange.MeleeDamage);
 
         
         [SerializeField] [LabelText("Range Damage Multiplier")]
         private float rangeDamageMult = 1;
-        public float RangeDamageMult => CalculateBonuses(rangeDamageMult, ItemSO.StatToChange.rangeDamageMult);
+        public float RangeDamageMult => CalculateBonuses(rangeDamageMult, ItemSO.StatToChange.RangeDamage);
 
         
         [SerializeField] [LabelText("Magic Damage Multiplier")]
         private float magicDamageMult = 1;
-        public float MagicDamageMult => CalculateBonuses(magicDamageMult, ItemSO.StatToChange.magicDamageMult);
+        public float MagicDamageMult => CalculateBonuses(magicDamageMult, ItemSO.StatToChange.MagicDamage);
 
         
         [SerializeField] [LabelText("Attack Speed Multiplier")]
         private float attackSpeedMult = 1;
-        public float AttackSpeedMult => CalculateBonuses(attackSpeedMult, ItemSO.StatToChange.attackSpeedMult);
+        public float AttackSpeedMult => CalculateBonuses(attackSpeedMult, ItemSO.StatToChange.AttackSpeed);
 
         
         [SerializeField] private float moveSpeedBonus;
-        public float MoveSpeedBonus => CalculateBonuses(moveSpeedBonus, ItemSO.StatToChange.moveSpeedBonus);
+        public float MoveSpeedBonus => CalculateBonuses(moveSpeedBonus, ItemSO.StatToChange.MoveSpeedBonus);
     #endregion
         
         private Dictionary<string, Buff> allActiveBuffs = new();
+        private Dictionary<string, Dictionary<ItemSO.StatToChange, float>> equipedItems = new();
         
-        public static readonly HashSet<ItemSO.StatToChange> percentageStatChange = new() { ItemSO.StatToChange.meleeDamageMult, ItemSO.StatToChange.rangeDamageMult, ItemSO.StatToChange.magicDamageMult };
+        public static readonly HashSet<ItemSO.StatToChange> percentageStatChange = new() { ItemSO.StatToChange.MeleeDamage, ItemSO.StatToChange.RangeDamage, ItemSO.StatToChange.MagicDamage, ItemSO.StatToChange.AttackSpeed };
+
+        public void ApplyItemStats(List<ItemArmor.ModifyStat> stats, string itemName) {
+            Dictionary<ItemSO.StatToChange, float> itemStats = new();
+            foreach (ItemArmor.ModifyStat stat in stats) {
+                print(stat.stat);
+                itemStats.Add(stat.stat, stat.value);
+            }
+            
+            equipedItems.Add(itemName, itemStats);
+            UpdateHealthAndMana();
+        }
+
+        public void DiscardItemStats(string itemName) {
+            equipedItems.Remove(itemName);
+            UpdateHealthAndMana();
+        }
         
         public void ApplyBuff(ItemSO.StatToChange statToChange, float newValue, float duration, bool newIsMult, string newBuffName) {
             // IF THE SAME BUFF IS ACTIVE THEN REFRESH IT
@@ -67,30 +84,32 @@ namespace HealthAndStats {
                 };
                 
                 allActiveBuffs.Add(newBuffName, buff);
-                UpdateHealthAndMana(statToChange);
+                UpdateHealthAndMana();
             }
         }
 
-        private void UpdateHealthAndMana(ItemSO.StatToChange statToChange) {
-            switch (statToChange) { // UPDATES MAX HEALTH AND MANA
-                case ItemSO.StatToChange.maxHealth:
-                    ManagerHolder.instance.healthManager.UpdateHealth();
-                    break;
-                case ItemSO.StatToChange.maxMana:
-                    ManagerHolder.instance.manaManager.UpdateMana();
-                    break;
-            }
+        private void UpdateHealthAndMana() {
+            ManagerHolder.instance.healthManager.UpdateHealth();
+            ManagerHolder.instance.manaManager.UpdateMana();
         }
 
         private float CalculateBonuses(float statValue, ItemSO.StatToChange stat) {
             float bonus = 0;
             List<float> mults = new();
+
+            foreach (Dictionary<ItemSO.StatToChange, float> itemStat in equipedItems.Values) {
+                foreach (KeyValuePair<ItemSO.StatToChange, float> stats in itemStat) {
+                    if (stats.Key != stat) continue;
+
+                    bonus += stats.Value;
+                }
+            }
             
             foreach (KeyValuePair<string, Buff> buff in allActiveBuffs) {
                 if (buff.Value.stat != stat) continue;
                 
                 if (buff.Value.isMult) mults.Add(buff.Value.value/100f);
-                else bonus += buff.Value.value;
+                else bonus += buff.Value.value/100f;
             }
 
             statValue += bonus;
@@ -117,21 +136,9 @@ namespace HealthAndStats {
             BuffTimer();
             // DisplayBuffOnUI();
             //DO THIS ONE LATER
-            
-#if UNITY_EDITOR
-            if(Input.GetKeyDown(KeyCode.L)) // STATS DEBUGGING
-                Debug.Log($"Max Health: {ManagerHolder.instance.healthManager.MaxHealthAfterBonus}\n" +
-                          $"Max Mana: {ManagerHolder.instance.manaManager.MaxManaAfterBonus}\n" +
-                          $"Defense: {ManagerHolder.instance.statsManager.Defense}\n" +
-                          $"Crit Chance Bonus: {ManagerHolder.instance.statsManager.CritChanceBonus}\n" +
-                          $"Melee Damage Mult: {ManagerHolder.instance.statsManager.MeleeDamageMult}\n" +
-                          $"Range Damage Mult: {ManagerHolder.instance.statsManager.RangeDamageMult}\n" +
-                          $"Magic Damage Mult: {ManagerHolder.instance.statsManager.MagicDamageMult}\n" +
-                          $"Attack Speed Mult: {ManagerHolder.instance.statsManager.AttackSpeedMult}\n" +
-                          $"Move Speed Bonus: {ManagerHolder.instance.statsManager.MoveSpeedBonus}");
-#endif
         }
     }
+    
     
     public class Buff {
         public string buffName;

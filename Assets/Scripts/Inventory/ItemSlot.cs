@@ -1,11 +1,21 @@
-using Player;
+using HealthAndStats;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Inventory {
     public class ItemSlot : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler {
-        public UIItem containedItem;
+        private UIItem containedItem;
+
+        public UIItem ContainedItem {
+            get => containedItem;
+            set {
+                if (slotType != SlotType.Inventory) {
+                    ApplyItemsStats(value);
+                } else containedItem = value;
+            }
+        }
+        
         [SerializeField] private Color selectedColor;
         private Color deselectedColor;
         private Image image;
@@ -57,6 +67,23 @@ namespace Inventory {
             if (isHoveredOver == true) {
                 InventoryManager.instance.SetCanUseItem(true);
                 isHoveredOver = false;
+            }
+        }
+
+        private void ApplyItemsStats(UIItem value) {
+            ItemArmor armor = null;
+            if (containedItem != null) {
+                armor = containedItem.itemSO as ItemArmor;
+                ManagerHolder.instance.statsManager.DiscardItemStats(armor.itemName);
+            }
+            
+            containedItem = value;
+
+            if (containedItem != null) {
+                if(armor == null)
+                    armor = containedItem.itemSO as ItemArmor;
+                
+                ManagerHolder.instance.statsManager.ApplyItemStats(armor.statsToModify, armor.itemName);
             }
         }
 

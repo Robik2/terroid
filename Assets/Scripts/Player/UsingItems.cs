@@ -35,7 +35,7 @@ namespace Player {
         }
 
         private void UseItem() {
-            UIItem item = UIInput.instance.IsHoldingItem == true ? UIInput.instance.HeldItem : InventoryManager.instance.selectedSlot.containedItem;
+            UIItem item = UIInput.instance.IsHoldingItem == true ? UIInput.instance.HeldItem : InventoryManager.instance.selectedSlot.ContainedItem;
             if (item == null) return;
             
             switch (item.itemSO) {

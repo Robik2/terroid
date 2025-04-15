@@ -171,7 +171,7 @@ namespace Player {
     
     #region FacingDirectionAndItemRotation
         public Vector2 GetFacingDirection() {
-            return new Vector2(Mathf.RoundToInt(transform.localScale.x), 1);
+            return new Vector2(lookAngle < 0 ? -1 : 1, 1);
         }
 
         private void LookAtMouse() {
@@ -192,6 +192,19 @@ namespace Player {
         }
     #endregion
     
+    public void PrintStats(InputAction.CallbackContext context) {
+        if(context.performed) 
+            Debug.Log($"Max Health: {ManagerHolder.instance.healthManager.MaxHealthAfterBonus}\n" +
+                      $"Max Mana: {ManagerHolder.instance.manaManager.MaxManaAfterBonus}\n" +
+                      $"Defense: {ManagerHolder.instance.statsManager.Defense}\n" +
+                      $"Crit Chance Bonus: {ManagerHolder.instance.statsManager.CritChanceBonus}\n" +
+                      $"Melee Damage Mult: {ManagerHolder.instance.statsManager.MeleeDamageMult}\n" +
+                      $"Range Damage Mult: {ManagerHolder.instance.statsManager.RangeDamageMult}\n" +
+                      $"Magic Damage Mult: {ManagerHolder.instance.statsManager.MagicDamageMult}\n" +
+                      $"Attack Speed Mult: {ManagerHolder.instance.statsManager.AttackSpeedMult}\n" +
+                      $"Move Speed Bonus: {ManagerHolder.instance.statsManager.MoveSpeedBonus}");
+    }
+        
         private void OnDrawGizmos() {
             Gizmos.color = Color.cyan;
             Gizmos.DrawCube(groundCheck.position - new Vector3(0, .1f, 0), new Vector3(.98f, .3f, 1));
