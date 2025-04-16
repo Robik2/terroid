@@ -1,3 +1,4 @@
+using ObjectPooling;
 using Player;
 using Sirenix.OdinInspector;
 using TMPro;
@@ -38,33 +39,10 @@ namespace Inventory {
             GetComponent<Image>().raycastTarget = !isHeld;
         }
 
-        public void UseItem() {
-            switch (itemSO) {
-                case ItemConsumable item: // LATER MAKE IT ACTUALLY AFFECT THOSE STATS
-                    ConsumeItem();
-                    break;
-
-                // case ItemSO.Type.weapon: // LATER MAKE IT SO THAT THE WEAPON FIRE/ATTACK
-                //     Debug.Log("This is a weapon: " + itemSO.itemName);
-                //     break;
-                //
-                // case ItemSO.Type.armor: // LATER DELETE AND REPLACE WITH EQUIPMENT SYSTEM NOW ITS DEBUGGING ONLY
-                //     Debug.Log("This is an armor: " + itemSO.itemName);
-                //     break;
-            }
-        }
-
-        private void ConsumeItem() {
-            ItemConsumable item = itemSO as ItemConsumable;
-            foreach (ItemConsumable.ModifyStat modifyStat in item.statsToModify) { Debug.Log(modifyStat.stat + " changed by " + modifyStat.value); }
-
-            UpdateAmount(-1, true);
-        }
-
-        public void DropItems() { // CHANGE THIS SO IT WOULD DROP OUT OF CHARACTER BASED ON ITS FACING DIRECTION
-            Item item = Instantiate(itemSO.itemPrefab, PlayerController.instance.transform.position, Quaternion.identity).GetComponent<Item>();
+        public void DropItems() {
+            Item item = ObjectPoolingManager.SpawnObject(itemSO.itemPrefab.gameObject, PlayerController.instance.transform.position, Quaternion.identity, ObjectPoolingManager.PoolingParent.Item).GetComponent<Item>();
             item.DropItem(PlayerController.instance.GetFacingDirection(), amount);
-            Destroy(gameObject);
+            ObjectPoolingManager.ReturnObjectToPool(gameObject, true);
         }
 
         public int UpdateAmount(int i, bool resetHeldItem) {
@@ -74,11 +52,13 @@ namespace Inventory {
 
             if (amount <= 0) {
                 if (resetHeldItem == true) {
-                    if (slot != null) slot.containedItem = null;
+                    if (slot != null) slot.ContainedItem = null;
                     UIInput.instance.ResetHeldItem();
                 }
 
-                Destroy(gameObject);
+                UIInput.instance.ResetHeldItem();
+                ObjectPoolingManager.ReturnObjectToPool(gameObject,true);
+                print("HAHA");
             }
 
             isFull = amount >= itemSO.stackLimit;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
-using Player;
+using ObjectPooling;
+using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -38,39 +39,30 @@ namespace Inventory {
         };
 
         private void Update() {
-            if (Input.GetMouseButtonDown(0)) { LeftMouseClick(); }
-
-            RMBInput();
+            if (RMB == true) { // HOLDING ACTION OF RMB
+                SetRMBRefreshTime();
+                if (Time.time - RMBLastCall >= RMBCurrentRefreshTime) RightMouseClick();
+            }
         }
+        
+    #region RMB    
+        public void RMBInput(InputAction.CallbackContext context) {
+            if (context.canceled) { RMB = false; }
 
-        private void RMBInput() {
-            if (Input.GetMouseButtonUp(1)) { RMB = false; }
-
-            if (Input.GetMouseButtonDown(1)) {
+            if (context.performed) {
                 RMB = true;
                 RMBTime = Time.time;
                 RMBLastCall = 1;
             }
-
-            if (RMB == true) {
-                switch (Time.time - RMBTime) {
-                    case < .8f:
-                        RMBCurrentRefreshTime = RMBRefreshTime["slow"];
-                        break;
-
-                    case < 1.5f:
-                        RMBCurrentRefreshTime = RMBRefreshTime["medium"];
-                        break;
-
-                    default:
-                        RMBCurrentRefreshTime = RMBRefreshTime["fast"];
-                        break;
-                }
-
-                if (Time.time - RMBLastCall >= RMBCurrentRefreshTime) RightMouseClick();
-            }
         }
 
+        private void SetRMBRefreshTime() {
+            RMBCurrentRefreshTime = (Time.time - RMBTime) switch {
+                < .8f => RMBRefreshTime["slow"],
+                < 1.5f => RMBRefreshTime["medium"],
+                _ => RMBRefreshTime["fast"]
+            };
+        }
 
         private void RightMouseClick() {
             RMBLastCall = Time.time;
@@ -85,44 +77,70 @@ namespace Inventory {
                 if (result.gameObject.CompareTag("UIItem")) {
                     UIItem item = result.gameObject.GetComponent<UIItem>();
 
-                    if (isHoldingItem == false) { TakeOneItem(item); } else if (isHoldingItem == true && item.itemSO.itemName == heldItem.itemSO.itemName) { AddOneItem(item); }
+                    // EQUIP ARMOR
+                    if (item.itemSO is ItemArmor armor && item.slot.slotType == ItemSlot.SlotType.Inventory) {
+                        ItemSlot equipmentSlot = null;
+                        switch (armor.armorType) {
+                            case ItemArmor.ArmorType.Head:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[0];
+                                break;
+                            
+                            case ItemArmor.ArmorType.Chest:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[1];
+                                break;
+                            
+                            case ItemArmor.ArmorType.Legs:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[2];
+                                break;
+                        }
+
+                        if (equipmentSlot.ContainedItem == null) EquipArmor(equipmentSlot, item.slot, item);
+                        else SwapArmor(equipmentSlot, item.slot, item);
+
+                        return;
+                    }
+                    
+                    // TAKING ONE BY ONE
+                    if (isHoldingItem == false) { TakeOneItem(item); } 
+                    else if (isHoldingItem == true && item.itemSO.itemName == heldItem.itemSO.itemName) { AddOneItem(item); }
                 }
             }
         }
+    #endregion
+    
+        public void LMBInput(InputAction.CallbackContext context) {
+            if (context.action.WasPerformedThisFrame()) {
+                List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
 
-        private void LeftMouseClick() {
-            List<RaycastResult> results = GetObject(); // THIS SEARCHES FOR OBJECTS UNDER MOUSE
+                foreach (var result in results) {
+                    if (result.gameObject.CompareTag("Slot")) {
+                        ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
+                        UIItem item = slot.ContainedItem;
 
-            // if (isHoldingItem && results.Count == 0) { return; }
+                        if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
+                            ToggleHold(heldItem);
+                            return;
+                        }
 
-            foreach (var result in results) {
-                if (result.gameObject.CompareTag("Slot")) {
-                    ItemSlot slot = result.gameObject.GetComponent<ItemSlot>();
-                    UIItem item = slot.containedItem;
+                        if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
+                            InventoryManager.instance.SelectSlot(slot);
+                            return;
+                        }
 
-                    if (heldItem != null && slot == heldItem.slot) { // RETURN TO ITS SLOT
-                        ToggleHold(heldItem);
-                        return;
-                    }
+                        switch (slot.ContainedItem, isHoldingItem) {
+                            case (not null, false): // PICK UP ITEM
+                                ToggleHold(item);
+                                break;
 
-                    if (InventoryManager.instance.menuActive == false) { // SELECT SLOT IN HOTBAR
-                        InventoryManager.instance.SelectSlot(slot);
-                        return;
-                    }
+                            case (null, true): // PLACE ITEM ON EMPTY SLOT
+                                PlaceItem(slot, heldItem);
+                                break;
 
-                    switch (slot.containedItem, isHoldingItem) {
-                        case (not null, false): // PICK UP ITEM
-                            ToggleHold(item);
-                            break;
-
-                        case (null, true): // PLACE ITEM ON EMPTY SLOT
-                            PlaceItem(slot, heldItem);
-                            break;
-
-                        case (not null, true): // ADDING TO STACK OR SWAPING ITEM IF CANT
-                            if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false && item.itemSO.isStackable == true) AddItemToStack(item, heldItem);
-                            else SwapItem(slot, heldItem, item);
-                            break;
+                            case (not null, true): // ADDING TO STACK OR SWAPING ITEM IF CANT
+                                if (heldItem.itemSO.itemName == item.itemSO.itemName && item.isFull == false && item.itemSO.isStackable == true) AddItemToStack(item, heldItem);
+                                else SwapItem(slot, heldItem, item);
+                                break;
+                        }
                     }
                 }
             }
@@ -140,7 +158,7 @@ namespace Inventory {
         private void ToggleHold(UIItem item) { // WHEN NOT SWITCHING
             item.ToggleHold();
             if (item.slot != null) {
-                item.slot.containedItem = null;
+                item.slot.ContainedItem = null;
                 item.slot = null;
             }
 
@@ -161,26 +179,58 @@ namespace Inventory {
 
     #region ManagingItemSlot
 
+        private void EquipArmor(ItemSlot equipSlot, ItemSlot currentSlot, UIItem item) {
+            // EMPTYING CURRENT SLOT
+            currentSlot.ContainedItem = null;
+            
+            // EQUIPING ITEM
+            item.transform.SetParent(equipSlot.transform);
+            item.slot = equipSlot;
+            equipSlot.ContainedItem = item;
+        }
+
+        private void SwapArmor(ItemSlot equipSlot, ItemSlot currentSlot, UIItem item) {
+            // MANAGING EQUIPED ITEM
+            equipSlot.ContainedItem.transform.SetParent(currentSlot.transform);
+            currentSlot.ContainedItem = equipSlot.ContainedItem;
+            equipSlot.ContainedItem.slot = currentSlot;
+            
+            // EQUIPING NEW ITEM
+            item.transform.SetParent(equipSlot.transform);
+            equipSlot.ContainedItem = item;
+            item.slot = equipSlot;
+        }
+        
         private void PlaceItem(ItemSlot slot, UIItem item) {
-            if (item.slot != null && item.slot.containedItem != null) {
-                if (item.slot.containedItem.isDividedByRMB == false) { item.slot.containedItem = null; }
+            if (slot.slotType != ItemSlot.SlotType.Inventory) { // MAKING SURE THAT ARMOR SLOTS ARE NOT OCCUPIED BY WRONGITEMS
+                if (item.itemSO is not ItemArmor armor) { return; }
+                if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
+            }
+            
+            if (item.slot != null && item.slot.ContainedItem != null) {
+                if (item.slot.ContainedItem.isDividedByRMB == false) { item.slot.ContainedItem = null; }
             }
 
             ToggleHold(item, slot);
 
-            slot.containedItem = item;
+            slot.ContainedItem = item;
 
             item.slot = slot;
 
-            if (oldSlot != null && oldSlot.containedItem != null) oldSlot.containedItem.isDividedByRMB = false;
+            if (oldSlot != null && oldSlot.ContainedItem != null) oldSlot.ContainedItem.isDividedByRMB = false;
             oldSlot = null;
             InventoryManager.instance.isHoveringOverSlot = true;
         }
 
         private void SwapItem(ItemSlot slot, UIItem item, UIItem slotItem) {
-            if (item.slot != null) { item.slot.containedItem = null; }
+            if (slot.slotType != ItemSlot.SlotType.Inventory) { // MAKING SURE THAT ARMOR SLOTS ARE NOT OCCUPIED BY WRONGITEMS
+                if (item.itemSO is not ItemArmor armor) { return; }
+                if (armor.armorType.ToString() != slot.slotType.ToString()) { return;  }
+            }
+            
+            if (item.slot != null) { item.slot.ContainedItem = null; }
 
-            slot.containedItem = item;
+            slot.ContainedItem = item;
 
             item.slot = slot;
             slotItem.slot = null;
@@ -198,7 +248,8 @@ namespace Inventory {
 
             InventoryManager.instance.AddItem(heldItem.itemSO, heldItem.amount);
 
-            Destroy(heldItem.gameObject);
+            // Destroy(heldItem.gameObject);
+            ObjectPoolingManager.ReturnObjectToPool(heldItem.gameObject, true);
             ResetHeldItem();
             oldSlot = null;
         }
@@ -228,7 +279,7 @@ namespace Inventory {
 
             UIItem newItem = InventoryManager.instance.CreateUiItem(item.itemSO, item.transform);
 
-            if (item.amount == 1) { item.slot.containedItem = null; }
+            if (item.amount == 1) { item.slot.ContainedItem = null; }
 
             ToggleHold(newItem);
 
@@ -241,7 +292,7 @@ namespace Inventory {
             if (item.itemSO.isStackable == false) return;
             if (heldItem.amount == heldItem.itemSO.stackLimit) return;
 
-            if (item.amount == 1) { item.slot.containedItem = null; }
+            if (item.amount == 1) { item.slot.ContainedItem = null; }
 
             heldItem.UpdateAmount(1, false);
             item.UpdateAmount(-1, false);

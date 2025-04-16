@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using HealthAndStats;
+using Player;
 using TMPro;
 using UnityEngine;
 
@@ -15,12 +13,35 @@ namespace Inventory {
 
         [SerializeField] private TMP_Text itemName;
         [SerializeField] private TMP_Text description;
-        [SerializeField] private GameObject panel;
+        [SerializeField] private RectTransform panel;
+        [SerializeField] private Canvas canvas;
 
         private void Update() {
-            panel.SetActive(InventoryManager.instance.CanDisplayDescription());
+            panel.gameObject.SetActive(InventoryManager.instance.CanDisplayDescription());
+            
+            transform.position = PlayerController.instance.MousePos;
+            ManagePivot();
+        }
 
-            transform.position = Input.mousePosition;
+        private void ManagePivot() {
+            Vector2 screenPos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvas.transform as RectTransform,
+                PlayerController.instance.MousePos,
+                canvas.worldCamera,
+                out screenPos
+            );
+
+            float pivotWorldOffsetX = 1f / panel.rect.width;
+            float pivotWorldOffsetY = 1f / panel.rect.height;
+
+            float pivotX = 1 - Mathf.Clamp(pivotWorldOffsetX * (Screen.width/2f - screenPos.x), 0, 1);
+            float pivotY = Mathf.Clamp(pivotWorldOffsetY * (Screen.height/2f + screenPos.y), 0, 1);
+            
+            pivotX = Screen.width/2f - screenPos.x < panel.rect.width ? pivotX : 0;
+            pivotY = Screen.height/2f + screenPos.y < panel.rect.height ? pivotY : 1;
+            
+            panel.pivot = new Vector2(pivotX, pivotY);
         }
 
         public void UpdateDescription(ItemSO itemSO) {
@@ -28,13 +49,22 @@ namespace Inventory {
             itemName.color = InventoryManager.rarityColors[itemSO.rarity.ToString()];
 
             string descriptionText = "";
-
+            
+            
             switch (itemSO) {
                 case ItemConsumable item:
                     foreach (ItemConsumable.ModifyStat modifyStat in item.statsToModify) {
-                        string statString = SplitStatName(modifyStat.stat.ToString());
+                        string statString = SplitStatName(modifyStat.stat.ToString(), true);
+                        string value = ValueToText(modifyStat.value, modifyStat.stat, false);
 
-                        descriptionText += $"Restores {statString} by {modifyStat.value}\n";
+                        if (modifyStat.isBuff) {
+                            string modifierText = modifyStat.value < 0 ? "decreased" : "increased";
+                            descriptionText += $"{statString} is {modifierText} by {value} for {modifyStat.buffDuration}s\n";
+                        } else {
+                            string modifierText = modifyStat.value < 0 ? "Lose" : "Restore";
+                            descriptionText += $"{modifierText} {value} {statString}\n";
+                        }
+                            
                     }
 
                     break;
@@ -48,11 +78,9 @@ namespace Inventory {
                 case ItemArmor item:
                     foreach (ItemArmor.ModifyStat modifyStat in item.statsToModify) {
                         string statString = SplitStatName(modifyStat.stat.ToString());
-
-                        if (StatsManager.percentageStatChange.Contains(modifyStat.stat))
-                            descriptionText += $"+{modifyStat.value}% {statString}\n";
-                        else
-                            descriptionText += $"+{modifyStat.value} {statString}\n";
+                        string value = ValueToText(modifyStat.value, modifyStat.stat);
+                        
+                        descriptionText += $"{value} {statString}\n";
                     }
 
                     break;
@@ -61,8 +89,22 @@ namespace Inventory {
             description.text = descriptionText;
         }
 
-        private string SplitStatName(string statName) {
-            return System.Text.RegularExpressions.Regex.Replace(statName, "(\\B[A-Z])", " $1").ToLower();
+        private string SplitStatName(string statName, bool deleteMax = false) {
+            statName = System.Text.RegularExpressions.Regex.Replace(statName, "(\\B[A-Z])", " $1");
+
+            if (deleteMax == true) statName = statName.Replace("Max ", "");
+            
+            return statName;
+        }
+
+        private string ValueToText(float value, ItemSO.StatToChange stat, bool addSign = true) {
+            string valueText = value >= 0 ? "+" + value : value.ToString();
+            
+            if (addSign == false) valueText = valueText.Replace("-", "").Replace("+", "");
+            
+            if (StatsManager.percentageStatChange.Contains(stat)) valueText += "%";
+
+            return valueText;
         }
     }
 }

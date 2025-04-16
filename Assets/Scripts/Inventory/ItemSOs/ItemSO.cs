@@ -21,17 +21,19 @@ namespace Inventory {
         }
         
         public enum StatToChange {
-            [InspectorName("health")] maxHealth,
-            [InspectorName("mana")] maxMana,
-            defense,
-            critChanceBonus,
-            meleeDamageMult,
-            rangeDamageMult,
-            magicDamageMult,
-            attackSpeedMult,
-            moveSpeedBonus
+            [InspectorName("health")] MaxHealth,
+            [InspectorName("mana")] MaxMana,
+            Defense,
+            CritChanceBonus,
+            MeleeDamage,
+            RangeDamage,
+            MagicDamage,
+            AttackSpeed,
+            MoveSpeedBonus
         };
 
         public virtual void UseItem() { }
+        
+        public virtual void UseItem(Transform t, int currentAnim) { }
     }
 }

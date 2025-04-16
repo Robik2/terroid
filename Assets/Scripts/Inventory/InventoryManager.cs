@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using Player;
+using ObjectPooling;
+using UnityEngine.InputSystem;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,10 +14,12 @@ namespace Inventory {
         }
 
         [SerializeField] private GameObject inventoryMenu;
+        [SerializeField] private GameObject equipmentMenu;
         [HideInInspector] public bool menuActive;
         [HideInInspector] public bool isHoveringOverSlot;
         public ItemSlot[] hotbarSlots;
         public ItemSlot[] inventorySlots;
+        public ItemSlot[] equipmentSlots;
         public GameObject ItemUIPrefab;
         [ReadOnly] public ItemSlot selectedSlot;
 
@@ -31,24 +34,21 @@ namespace Inventory {
         };
 
         private void Start() {
-            SelectSlot(hotbarSlots[0]);
+            SelectSlot(0);
         }
 
-        private void Update() {
-            if (Input.GetButtonDown("Cancel")) {
-                ToggleInventory();
-            }
-        }
-
-        private void ToggleInventory() {
-            inventoryMenu.SetActive(!menuActive);
-            menuActive = !menuActive;
-            UIInput.instance.RMB = false;
-            if (menuActive == false) {
-                foreach (ItemSlot slot in inventorySlots) {
-                    slot.CheckHover();
+        public void ToggleInventory(InputAction.CallbackContext context) {
+            if (context.performed) {
+                inventoryMenu.SetActive(!menuActive);
+                equipmentMenu.SetActive(!menuActive);
+                menuActive = !menuActive;
+                UIInput.instance.RMB = false;
+                if (menuActive == false) {
+                    foreach (ItemSlot slot in inventorySlots) {
+                        slot.CheckHover();
+                    }
+                    UIInput.instance.PutItemBackToSlot();
                 }
-                UIInput.instance.PutItemBackToSlot();
             }
         }
 
@@ -66,28 +66,29 @@ namespace Inventory {
         private (ItemSlot slot, bool stackFound) SearchForSlot(ItemSO itemSO) {
             ItemSlot foundSlot = null;
             foreach (ItemSlot slot in hotbarSlots) {
-                if (slot.containedItem != null
-                    && slot.containedItem.itemSO.itemName == itemSO.itemName
-                    && slot.containedItem.isFull == false
-                    && slot.containedItem.itemSO.isStackable == true) { return (slot, true); }
+                if (slot.ContainedItem != null
+                    && slot.ContainedItem.itemSO.itemName == itemSO.itemName
+                    && slot.ContainedItem.isFull == false
+                    && slot.ContainedItem.itemSO.isStackable == true) { return (slot, true); }
 
-                if (slot.containedItem == null && foundSlot == null) { foundSlot = slot; }
+                if (slot.ContainedItem == null && foundSlot == null) { foundSlot = slot; }
             }
 
             foreach (ItemSlot slot in inventorySlots) {
-                if (slot.containedItem != null
-                    && slot.containedItem.itemSO.itemName == itemSO.itemName
-                    && slot.containedItem.isFull == false
-                    && slot.containedItem.itemSO.isStackable == true) { return (slot, true); }
+                if (slot.ContainedItem != null
+                    && slot.ContainedItem.itemSO.itemName == itemSO.itemName
+                    && slot.ContainedItem.isFull == false
+                    && slot.ContainedItem.itemSO.isStackable == true) { return (slot, true); }
 
-                if (slot.containedItem == null && foundSlot == null) { foundSlot = slot; }
+                if (slot.ContainedItem == null && foundSlot == null) { foundSlot = slot; }
             }
 
             return (foundSlot, false);
         }
 
         public UIItem CreateUiItem(ItemSO itemSO, Transform parent) {
-            UIItem item = Instantiate(ItemUIPrefab, parent).GetComponent<UIItem>();
+            // UIItem item = Instantiate(ItemUIPrefab, parent).GetComponent<UIItem>();
+            UIItem item = ObjectPoolingManager.SpawnObject(ItemUIPrefab, parent).GetComponent<UIItem>();
             item.GetComponent<Image>().sprite = itemSO.sprite;
             item.amountText.enabled = itemSO.isStackable;
             item.name = itemSO.itemName;
@@ -98,13 +99,23 @@ namespace Inventory {
             return item;
         }
 
-        public void SelectSlot(ItemSlot slot) {
+    #region SlotSelection
+        public void SelectSlot(InputAction.CallbackContext context) { // FROM INPUT
+            if(context.performed) SelectSlot(hotbarSlots[Mathf.RoundToInt(context.ReadValue<float>())]);
+        }
+        
+        public void SelectSlot(int slotIndex) { // WITH INDEX
+            SelectSlot(hotbarSlots[slotIndex]); // THIS HELPS KEEPING ALL THE LOGIC IN ONLY ONE METHOD
+        }
+
+        public void SelectSlot(ItemSlot slot) { // WITH ITEMSLOT (KEEP ALL LOGIC IN THIS ONE)
             foreach (ItemSlot hotbarSlot in hotbarSlots) { hotbarSlot.DeselectSlot(); }
 
             selectedSlot = slot;
             selectedSlot.SelectSlot();
         }
-
+    #endregion
+    
         public bool CanDisplayDescription() {
             return menuActive && isHoveringOverSlot;
         }

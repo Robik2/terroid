@@ -3,15 +3,15 @@ using UnityEngine;
 using Inventory;
 
 namespace Inventory {
-    [CreateAssetMenu(fileName = "NewArmor", menuName = "Scriptable Objects/Items/Item Armor SO")]
+    [CreateAssetMenu(fileName = "NewArmor", menuName = "Scriptable Objects/Item Armor SO")]
     public class ItemArmor : ItemSO {
         public ArmorType armorType;
         public List<ModifyStat> statsToModify = new();
 
         public enum ArmorType {
-            head,
-            chest,
-            legs
+            Head,
+            Chest,
+            Legs
         }
 
         [System.Serializable]

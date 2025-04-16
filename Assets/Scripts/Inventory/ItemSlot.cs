@@ -1,17 +1,28 @@
-using Player;
+using HealthAndStats;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Inventory {
     public class ItemSlot : MonoBehaviour, IPointerExitHandler, IPointerEnterHandler {
-        public UIItem containedItem;
+        private UIItem containedItem;
+
+        public UIItem ContainedItem {
+            get => containedItem;
+            set {
+                if (slotType != SlotType.Inventory) {
+                    ApplyItemsStats(value);
+                } else containedItem = value;
+            }
+        }
+        
         [SerializeField] private Color selectedColor;
         private Color deselectedColor;
         private Image image;
         private bool isHoveredOver;
+        public SlotType slotType;
 
-        private void Start() {
+        private void Awake() {
             image = GetComponent<Image>();
             deselectedColor = image.color;
         }
@@ -40,7 +51,6 @@ namespace Inventory {
             InventoryManager.instance.SetCanUseItem(false);
             
             if (containedItem == null) return;
-            
 
             ItemDescription.instance.UpdateDescription(containedItem.itemSO);
         }
@@ -58,6 +68,31 @@ namespace Inventory {
                 InventoryManager.instance.SetCanUseItem(true);
                 isHoveredOver = false;
             }
+        }
+
+        private void ApplyItemsStats(UIItem value) {
+            ItemArmor armor = null;
+            if (containedItem != null) {
+                armor = containedItem.itemSO as ItemArmor;
+                ManagerHolder.instance.statsManager.DiscardItemStats(armor.itemName);
+            }
+            
+            containedItem = value;
+
+            if (containedItem != null) {
+                if(armor == null)
+                    armor = containedItem.itemSO as ItemArmor;
+                
+                ManagerHolder.instance.statsManager.ApplyItemStats(armor.statsToModify, armor.itemName);
+            }
+        }
+
+        public enum SlotType {
+            Inventory,
+            Head,
+            Chest,
+            Legs
+            //  MAY ADD SOMETHING LIKE ACCESSORY/VANITY LATER
         }
     }
 }
