@@ -77,7 +77,32 @@ namespace Inventory {
                 if (result.gameObject.CompareTag("UIItem")) {
                     UIItem item = result.gameObject.GetComponent<UIItem>();
 
-                    if (isHoldingItem == false) { TakeOneItem(item); } else if (isHoldingItem == true && item.itemSO.itemName == heldItem.itemSO.itemName) { AddOneItem(item); }
+                    // EQUIP ARMOR
+                    if (item.itemSO is ItemArmor armor && item.slot.slotType == ItemSlot.SlotType.Inventory) {
+                        ItemSlot equipmentSlot = null;
+                        switch (armor.armorType) {
+                            case ItemArmor.ArmorType.Head:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[0];
+                                break;
+                            
+                            case ItemArmor.ArmorType.Chest:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[1];
+                                break;
+                            
+                            case ItemArmor.ArmorType.Legs:
+                                equipmentSlot = InventoryManager.instance.equipmentSlots[2];
+                                break;
+                        }
+
+                        if (equipmentSlot.ContainedItem == null) EquipArmor(equipmentSlot, item.slot, item);
+                        else SwapArmor(equipmentSlot, item.slot, item);
+
+                        return;
+                    }
+                    
+                    // TAKING ONE BY ONE
+                    if (isHoldingItem == false) { TakeOneItem(item); } 
+                    else if (isHoldingItem == true && item.itemSO.itemName == heldItem.itemSO.itemName) { AddOneItem(item); }
                 }
             }
         }
@@ -154,6 +179,28 @@ namespace Inventory {
 
     #region ManagingItemSlot
 
+        private void EquipArmor(ItemSlot equipSlot, ItemSlot currentSlot, UIItem item) {
+            // EMPTYING CURRENT SLOT
+            currentSlot.ContainedItem = null;
+            
+            // EQUIPING ITEM
+            item.transform.SetParent(equipSlot.transform);
+            item.slot = equipSlot;
+            equipSlot.ContainedItem = item;
+        }
+
+        private void SwapArmor(ItemSlot equipSlot, ItemSlot currentSlot, UIItem item) {
+            // MANAGING EQUIPED ITEM
+            equipSlot.ContainedItem.transform.SetParent(currentSlot.transform);
+            currentSlot.ContainedItem = equipSlot.ContainedItem;
+            equipSlot.ContainedItem.slot = currentSlot;
+            
+            // EQUIPING NEW ITEM
+            item.transform.SetParent(equipSlot.transform);
+            equipSlot.ContainedItem = item;
+            item.slot = equipSlot;
+        }
+        
         private void PlaceItem(ItemSlot slot, UIItem item) {
             if (slot.slotType != ItemSlot.SlotType.Inventory) { // MAKING SURE THAT ARMOR SLOTS ARE NOT OCCUPIED BY WRONGITEMS
                 if (item.itemSO is not ItemArmor armor) { return; }

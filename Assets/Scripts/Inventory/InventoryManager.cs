@@ -34,7 +34,7 @@ namespace Inventory {
         };
 
         private void Start() {
-            SelectSlot(hotbarSlots[0]);
+            SelectSlot(0);
         }
 
         public void ToggleInventory(InputAction.CallbackContext context) {
@@ -99,13 +99,23 @@ namespace Inventory {
             return item;
         }
 
-        public void SelectSlot(ItemSlot slot) {
+    #region SlotSelection
+        public void SelectSlot(InputAction.CallbackContext context) { // FROM INPUT
+            if(context.performed) SelectSlot(hotbarSlots[Mathf.RoundToInt(context.ReadValue<float>())]);
+        }
+        
+        public void SelectSlot(int slotIndex) { // WITH INDEX
+            SelectSlot(hotbarSlots[slotIndex]); // THIS HELPS KEEPING ALL THE LOGIC IN ONLY ONE METHOD
+        }
+
+        public void SelectSlot(ItemSlot slot) { // WITH ITEMSLOT (KEEP ALL LOGIC IN THIS ONE)
             foreach (ItemSlot hotbarSlot in hotbarSlots) { hotbarSlot.DeselectSlot(); }
 
             selectedSlot = slot;
             selectedSlot.SelectSlot();
         }
-
+    #endregion
+    
         public bool CanDisplayDescription() {
             return menuActive && isHoveringOverSlot;
         }
